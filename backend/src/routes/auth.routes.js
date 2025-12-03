@@ -1,13 +1,11 @@
-const express = require("express")
-const router = express.Router()
-
-
+import { Router } from "express"
 //importt controller functions
+import { register, login, getMe } from "../controllers/auth.controller.js"
 
-const { regiter, login, getMe } = require("../controllers/auth.controller")
+const router = Router();
 
 //POST /api/auth/register
-router.post("/register", regiter)
+router.post("/register", register)
 
 //POST /api/auth/login
 router.post("/login", login)
@@ -15,4 +13,7 @@ router.post("/login", login)
 //GET /api/auth/me
 router.get("/me", getMe)
 
-module.exports = router;
+export default router;
+
+
+
