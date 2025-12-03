@@ -1,6 +1,7 @@
 import { Router } from "express"
 //importt controller functions
 import { register, login, getMe } from "../controllers/auth.controller.js"
+import { authMiddleware } from "../middleware/auth.js";
 
 const router = Router();
 
@@ -11,7 +12,8 @@ router.post("/register", register)
 router.post("/login", login)
 
 //GET /api/auth/me
-router.get("/me", getMe)
+//protecting the route, adding auth middle ware
+router.get("/me", authMiddleware, getMe)
 
 export default router;
 
