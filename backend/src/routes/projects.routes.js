@@ -1,9 +1,12 @@
 import { Router } from "express";
 
 import { getProjects, createProject, getProjectById, updateProject, deleteProject } from "../controllers/projects.controller.js";
+import { authMiddleware } from "../middleware/auth.js";
 
 const router = Router();
 
+//all routes below this require auth
+router.use(authMiddleware)
 //List all project of the user
 router.get("/", getProjects);
 
