@@ -3,7 +3,6 @@ import pkg from "pg"
 
 dotenv.config();
 const { Pool } = pkg;
-
 const pool = new Pool({
     host: process.env.DB_HOST,
     port: process.env.PORT,
