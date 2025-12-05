@@ -79,7 +79,7 @@ export async function createTask(req, res) {
         }
 
         const projectId = Number(project_id);
-        const createdBy = Number(created_by);
+        const createdBy = req.user.id;
         const assignedTo = assigned_to ? Number(assigned_to) : null
 
         if (Number.isNaN(projectId) || Number.isNaN(createdBy) || (assigned_to && Number.isNaN(assignedTo))) {

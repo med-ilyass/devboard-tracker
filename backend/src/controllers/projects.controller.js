@@ -4,8 +4,11 @@ export async function getProjects(req, res) {
     // res.json({ message: "get Projects works!" })
     // For now: returns all projects (later I can filter by req.user.id)
     try {
+        const ownerId = req.user.id;
         console.log("✅ getProjects handler hit");
-        const result = await pool.query("select id, name, description, owner_id, status, created_at FROM projects ORDER BY created_at DESC")
+        const result = await pool.query(`select id, name, description, owner_id, status, created_at FROM projects where 
+            owner_id = $1
+            ORDER BY created_at DESC`, [ownerId])
         res.json(result.rows);
     } catch (error) {
         console.error("Error in get all projects", error.message)
@@ -17,12 +20,13 @@ export async function getProjects(req, res) {
 export async function createProject(req, res) {
     // res.json({ messgae: "Create Projects works!" })
     try {
-        const { name, description, owner_id } = req.body;
+        const { name, description } = req.body;
         if (!name) {
             return res.status(400).json({ message: "name is required!" })
         }
         //Later i will use req.user.id instead of owner_id from body
-        const ownerId = owner_id ?? null;
+        // const ownerId = owner_id ?? null;
+        const ownerId = req.user.id;
         if (!ownerId) {
             return res.status(400).json({ message: "owner_id is required for now (until auth is implement)" })
         }
