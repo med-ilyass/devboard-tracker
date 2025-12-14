@@ -1,7 +1,10 @@
 import { useState } from "react";
-export default function Login() {
+import { useNavigate } from "react-router-dom";
+export default function Login({ onLogin }) {
 
     const [error, setError] = useState("");
+    const navigate = useNavigate();
+
     async function handleSubmit(e) {
         e.prevenDefault();
         setError("");
@@ -26,6 +29,8 @@ export default function Login() {
                 return;
             }
             console.log("Login success:", data)
+            onLogin(data.user, data.token)
+            navigate("/")
         } catch (error) {
             console.error({ error: "Network Error" })
             setError("Network Error!!!")
