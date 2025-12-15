@@ -17,6 +17,8 @@ function generateToken(user) {
 export async function register(req, res) {
     //res.json({ message: "regiter route works" })
     try {
+        const ping = await pool.query("SELECT NOW()");
+        console.log("✅ DB ping:", ping.rows[0]);
         const { email, password, name, role } = req.body;
         if (!email || !password || !name) {
             return res.status(400).json({ message: "Email, password and name are required!" })
@@ -26,6 +28,7 @@ export async function register(req, res) {
         if (existing.rows.length > 0) {
             return res.status(409).json({ message: "Email already in use!" })
         }
+        
         //let's hash the password
         const passwordHash = await bcrypt.hash(password, SALT_ROUND);
         const userRole = role || "developer"
@@ -38,7 +41,7 @@ export async function register(req, res) {
         })
     } catch (error) {
         console.error("Error in register!", error.message)
-        return res.status(500).json({ error: "Server error during registration!" })
+        return res.status(500).json({ error: "Server error during registration!!" })
     }
 }
 //POST api/auth/login
