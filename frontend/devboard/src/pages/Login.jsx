@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 export default function Login({ onLogin }) {
 
     const [error, setError] = useState("");
@@ -54,7 +54,7 @@ export default function Login({ onLogin }) {
                 </div>
                 <button type="submit">Login</button>
             </form>
-
+            <p style={{ marginTop: "1rem" }}>New User? <Link to="/register" >Create Account</Link></p>
         </div >
     );
 }
