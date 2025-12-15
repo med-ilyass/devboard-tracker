@@ -5,6 +5,8 @@ import Login from './pages/Login.jsx'
 import Register from './pages/Register.jsx'
 import Project from './pages/Projects.jsx'
 import NotFound from './pages/NotFound.jsx'
+import ResetPassword from './pages/ResetPassword.jsx'
+import ForgotPassword from './pages/ForgotPassword.jsx'
 import { Routes, Route, BrowserRouter } from "react-router-dom"
 
 function App() {
@@ -36,6 +38,8 @@ function App() {
         <Route path='/login' element={<Login onLogin={handleLogin} />} />
         <Route path='/register' element={<Register />} />
         <Route path='*' element={<NotFound />} />
+        <Route path='/forgot-password' element={<ForgotPassword />} />
+        <Route path='/reset-password' element={<ResetPassword />} />
       </Routes>
     </BrowserRouter>
   )

@@ -20,7 +20,7 @@ export default function Register({ onLogin }) {
         const password = form.get("password")
         const confirmPassword = form.get("confirm_password")
 
-        if (password !== confirmPassword) {
+        if (password.trim() !== confirmPassword.trim()) {
             //will add a condition
             // won't create account until password is same as confirm password
             setError("passwords do not match")

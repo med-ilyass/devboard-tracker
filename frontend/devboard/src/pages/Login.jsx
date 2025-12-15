@@ -55,6 +55,7 @@ export default function Login({ onLogin }) {
                 <button type="submit">Login</button>
             </form>
             <p style={{ marginTop: "1rem" }}>New User? <Link to="/register" >Create Account</Link></p>
+            <p style={{ marginTop: "1rem" }}><Link to="/forgot-password">Forget Password?</Link></p>
         </div >
     );
 }
