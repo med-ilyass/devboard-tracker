@@ -1,7 +1,10 @@
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 import pool from "../config/db.js"
+import { randomInt } from 'node:crypto'
 
+const COOLDOWN_SECONDS = 60;
+const OTP_EXPIRES_MINUTES = 10; //code expiry
 const SALT_ROUND = 10;
 function generateToken(user) {
     return jwt.sign({
@@ -17,8 +20,6 @@ function generateToken(user) {
 export async function register(req, res) {
     //res.json({ message: "regiter route works" })
     try {
-        const ping = await pool.query("SELECT NOW()");
-        console.log("✅ DB ping:", ping.rows[0]);
         const { email, password, name, role } = req.body;
         if (!email || !password || !name) {
             return res.status(400).json({ message: "Email, password and name are required!" })
@@ -28,7 +29,7 @@ export async function register(req, res) {
         if (existing.rows.length > 0) {
             return res.status(409).json({ message: "Email already in use!" })
         }
-        
+
         //let's hash the password
         const passwordHash = await bcrypt.hash(password, SALT_ROUND);
         const userRole = role || "developer"
@@ -100,5 +101,68 @@ export async function getMe(req, res) {
         return res
             .status(500)
             .json({ message: "Server error fetshing user." })
+    }
+}
+
+export async function forgotPassword(req, res) {
+
+    try {
+
+        const { email } = req.body
+        if (!email) return res.status(400).json({ message: "Email is required." })
+
+        const genericResponce = { message: "If the email exists, a code was sent." }
+
+        //let finf only user's id
+        const userResults = await pool.query(`select id from users where email = $1`, [email])
+        if (userResults.rows.length === 0) {
+            //email not found -> but still respond OK
+            return res.status(200).json(genericResponce)
+        }
+        const userId = userResults.rows[0].id;
+
+        //Cooldown Check (Latest unused reset)
+        const latestReset = await pool.query(`
+            select id, last_sent_at from password_resets where user_id = $1 and used_at is null
+            ORDER BY created_at DESC
+            LIMIT 1
+            `, [userId]);
+
+        if (latestReset.rows.length > 0) {
+            const lastSentAt = new Date(latestReset.rows[0].last_sent_at).getTime();
+            const secondsSince = (Date.now() - lastSentAt) / 1000;
+
+            if (secondsSince < COOLDOWN_SECONDS) {
+                return res.status(429).json({
+                    message: `Please wait ${Math.ceil(COOLDOWN_SECONDS - secondsSince)}s before resending.`
+                });
+            }
+        }
+
+        // Generate 6-digit numeric code
+        const code = String(randomInt(100000, 1000000)); // 100000..999999
+
+        // Hash code (never store plaintext)
+        const codeHash = await bcrypt.hash(code, 10);
+
+        // Expiry time
+        const expiresAt = new Date(Date.now() + OTP_EXPIRES_MINUTES * 60 * 1000);
+
+        // Insert reset record
+        await pool.query(
+            `
+      INSERT INTO password_resets (user_id, code_hash, expires_at, last_sent_at)
+      VALUES ($1, $2, $3, NOW())
+      `,
+            [userId, codeHash, expiresAt]
+        );
+
+        // For dev only: log the code (later: send via email)
+        console.log("🔐 PASSWORD RESET CODE for", email, ":", code);
+
+        return res.status(200).json(genericResponce);
+    } catch (error) {
+        console.error("Error in forgotPassword:", error.message);
+        return res.status(500).json({ message: "Server error" });
     }
 }
