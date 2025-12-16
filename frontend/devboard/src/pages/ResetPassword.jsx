@@ -11,18 +11,54 @@ export default function ResetPassword() {
 
     //Cooldown timer state
     const COOLDOWN_SECONDS = 60;
-    const [secondLeft, setSecondLeft] = useState(COOLDOWN_SECONDS);
+    //key per email so different email don't share cooldown
+    const storageKey = email ? `devboard_resend_available_at:${email}` : null;
+    function computeSecondsLeft(availableAtMs) {
+        const diffMs = availableAtMs - Date.now();
+        return Math.max(0, Math.ceil(diffMs / 1000))
+    }
+    const [secondLeft, setSecondLeft] = useState(0);
     const canResend = secondLeft === 0;
 
     useEffect(() => {
+        if (!storageKey) return;
+        const raw = localStorage.getItem(storageKey);
+        //start emmedialtely if no saved cooldown
+
+        if (!raw) {
+            const availableAt = Date.now() + COOLDOWN_SECONDS * 1000;
+            localStorage.setItem(storageKey, String(availableAt))
+            setSecondLeft(computeSecondsLeft(availableAt))
+            // setSecondLeft(0)
+            return;
+        }
+        const availableAt = Number(raw)
+
+        if (Number.isNaN(availableAt)) {
+            localStorage.removeItem(storageKey);
+            setSecondLeft(0)
+            return;
+        }
+        setSecondLeft(computeSecondsLeft(availableAt))
+    }
+        , [storageKey])
+    useEffect(() => {
+        if (!storageKey) return;
         if (secondLeft === 0) {
             return;
         }
         const id = setInterval(() => {
-            setSecondLeft((s) => Math.max(0, s - 1));
+            const raw = localStorage.getItem(storageKey);
+            const availableAt = Number(raw);
+            if (Number.isNaN(availableAt)) {
+                setSecondLeft(0)
+                return;
+            }
+            // setSecondLeft((s) => Math.max(0, s - 1));
+            setSecondLeft(computeSecondsLeft(availableAt))
         }, 1000)
         return () => clearInterval(id)
-    }, [secondLeft])
+    }, [secondLeft, storageKey])
 
     async function handleResend() {
         if (!email) {
@@ -36,7 +72,9 @@ export default function ResetPassword() {
 
             //for now just simulate success::
             console.log("Resend Code to: ", email)
-            setSecondLeft(COOLDOWN_SECONDS)
+            const availableAt = Date.now() + COOLDOWN_SECONDS * 1000;
+            localStorage.setItem(storageKey, String(availableAt));
+            setSecondLeft(computeSecondsLeft(availableAt))
         } catch (error) {
             console.error(error)
             setError("Failed to resend code. try again.")
@@ -51,9 +89,9 @@ export default function ResetPassword() {
         const form = new FormData(e.target);
         const code = form.get("code")
         const newPassword = form.get("new_password")
-        const confirmPasswoprd = form.get("confirm_password")
+        const confirmPassword = form.get("confirm_password")
 
-        if (newPassword.trim() !== confirmPasswoprd.trim()) {
+        if (newPassword.trim() !== confirmPassword.trim()) {
             setError("Password do not match!")
             setLoading(false)
             return;
