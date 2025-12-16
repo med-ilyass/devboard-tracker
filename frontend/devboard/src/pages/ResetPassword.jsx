@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 
 export default function ResetPassword() {
@@ -8,6 +8,40 @@ export default function ResetPassword() {
 
     const [error, setError] = useState("")
     const [loading, setLoading] = useState(false)
+
+    //Cooldown timer state
+    const COOLDOWN_SECONDS = 60;
+    const [secondLeft, setSecondLeft] = useState(COOLDOWN_SECONDS);
+    const canResend = secondLeft === 0;
+
+    useEffect(() => {
+        if (secondLeft === 0) {
+            return;
+        }
+        const id = setInterval(() => {
+            setSecondLeft((s) => Math.max(0, s - 1));
+        }, 1000)
+        return () => clearInterval(id)
+    }, [secondLeft])
+
+    async function handleResend() {
+        if (!email) {
+            setError("Missing email. Go Back and request a reset again.")
+            return;
+        }
+        setError("");
+        try {
+            //later i will xonnect this to the backend
+            //await fetch("somethink like /api/auth/forget-password", {....})
+
+            //for now just simulate success::
+            console.log("Resend Code to: ", email)
+            setSecondLeft(COOLDOWN_SECONDS)
+        } catch (error) {
+            console.error(error)
+            setError("Failed to resend code. try again.")
+        }
+    }
 
     async function handleSubmit(e) {
         e.preventDefault();
@@ -54,6 +88,14 @@ export default function ResetPassword() {
                         loading ? "Updating..." : "Update Password"
                     }
                 </button>
+                <div style={{ marginTop: "1rem" }}>
+                    <button type="button" onClick={handleResend} disabled={!canResend}>
+                        Resend code
+                    </button>
+                    {!canResend && (
+                        <p style={{ marginTop: "0.5rem" }}>Resend available in <strong>{secondLeft}</strong>s</p>
+                    )}
+                </div>
                 <p style={{ marginTop: "1rem" }}>Back to <Link to="/login">Login</Link></p>
             </form>
         </div>
