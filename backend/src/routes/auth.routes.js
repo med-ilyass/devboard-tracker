@@ -15,6 +15,10 @@ router.post("/login", login)
 //protecting the route, adding auth middle ware
 router.get("/me", authMiddleware, getMe)
 
+router.post("/forgot-password", forgotPassword)
+router.post("/reset-password", resetPassword)
+router.post("/verify-reset-code", verifyResetCode)
+
 export default router;
 
 
