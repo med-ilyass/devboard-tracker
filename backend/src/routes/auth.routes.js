@@ -2,6 +2,7 @@ import { Router } from "express"
 //importt controller functions
 import { register, login, getMe } from "../controllers/auth.controller.js"
 import { authMiddleware } from "../middleware/auth.js";
+import { verifyResetCode, forgotPassword, resetPassword } from "../controllers/auth.controller.js";
 
 const router = Router();
 
