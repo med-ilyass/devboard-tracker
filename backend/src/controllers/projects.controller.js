@@ -6,9 +6,13 @@ export async function getProjects(req, res) {
     try {
         const ownerId = req.user.id;
         console.log("✅ getProjects handler hit");
-        const result = await pool.query(`select id, name, description, owner_id, status, created_at FROM projects where 
-            owner_id = $1
-            ORDER BY created_at DESC`, [ownerId])
+        const result = await pool.query(
+            `SELECT id, name, description, owner_id, status, created_at
+            FROM projects
+            WHERE owner_id = $1
+            ORDER BY created_at DESC`,
+            [ownerId]
+        );
         res.json(result.rows);
     } catch (error) {
         console.error("Error in get all projects", error.message)
@@ -53,8 +57,14 @@ export async function getProjectById(req, res) {
         if (Number.isNaN(id)) {
             return res.status(400).json({ message: "Invalid project id" })
         }
-        const result = await pool.query(`select id, name, description, owner_id, status, created_at
-            from projects where id = $1`, [id]);
+        const ownerId = req.user.id;
+
+        const result = await pool.query(
+            `SELECT id, name, description, owner_id, status, created_at 
+            FROM projects
+            WHERE id = $1 AND owner_id = $2`,
+            [id, ownerId]
+        );
 
         if (result.rows.length === 0) {
             return res.status(404).json({ message: "Project not found!" })
@@ -79,10 +89,10 @@ export async function updateProject(req, res) {
         const { name, description, status } = req.body;
         // Use COALESCE so undefined fields are ignored
         const updateQuery = `update projects set name = COALESCE($1, name), description = COALESCE($2, description),
-        status = COALESCE($3, status) where id = $4 RETURNING id, name, description, owner_id, status, created_at`;
-        const result = await pool.query(updateQuery, [name ?? null, description ?? null, status ?? null, id])
+        status = COALESCE($3, status) where id = $4 AND owner_id = $5 RETURNING id, name, description, owner_id, status, created_at`;
+        const result = await pool.query(updateQuery, [name ?? null, description ?? null, status ?? null, id, req.user.id])
         if (result.rows.length === 0) {
-            return res.status(400).json({ message: "Project not found" })
+            return res.status(404).json({ message: "Project not found" })
         }
         const project = result.rows[0];
         res.json(project);
@@ -105,9 +115,9 @@ export async function deleteProject(req, res) {
         const deleteQuery = await pool.query(`
             UPDATE projects
             SET status = 'archived'
-            WHERE id = $1
+            WHERE id = $1 AND owner_id = $2
             RETURNING id, name, description, owner_id, status, created_at 
-            `, [id])
+            `, [id, req.user.id])
 
         if (deleteQuery.rows.length === 0) {
             return res.status(404).json({ message: "Project not found" })
