@@ -121,6 +121,8 @@ export async function forgotPassword(req, res) {
         }
         const userId = userResults.rows[0].id;
 
+
+
         //Cooldown Check (Latest unused reset)
         const latestReset = await pool.query(`
             select id, last_sent_at from password_resets where user_id = $1 and used_at is null
@@ -143,7 +145,7 @@ export async function forgotPassword(req, res) {
         const code = String(randomInt(100000, 1000000)); // 100000..999999
 
         // Hash code (never store plaintext)
-        const codeHash = await bcrypt.hash(code, 10);
+        const codeHash = await bcrypt.hash(code, SALT_ROUND);
 
         // Expiry time
         const expiresAt = new Date(Date.now() + OTP_EXPIRES_MINUTES * 60 * 1000);
@@ -163,6 +165,121 @@ export async function forgotPassword(req, res) {
         return res.status(200).json(genericResponce);
     } catch (error) {
         console.error("Error in forgotPassword:", error.message);
+        return res.status(500).json({ message: "Server error" });
+    }
+}
+
+const MAX_ATTEMPTS = 5;
+function generateResetToken(userId) {
+    return jwt.sign(
+        {
+            id: userId, purpose: "pw_reset"
+        },
+        process.env.JWT_SECRET,
+        {
+            expiresIn: "10m"
+        }
+    )
+}
+
+export async function verifyResetCode(req, res) {
+
+    try {
+        const { email, code } = req.body;
+        if (!email || !code) {
+            return res.status(400).json({ message: "Email and code are required" })
+        }
+        // first, find user
+        const userResults = await pool.query(`select id from users where email=$1`, [email]);
+        if (userResults.rows.length === 0) {
+            return res.status(400).json({ message: "Invalid or expired code." });
+        }
+        const userId = userResults.rows[0].id;
+
+        //Second let get latest active reset row
+
+        const resetResult = await pool.query(
+            `
+            select id, code_hash, expires_at, attempts
+            from password_resets
+            where user_id = $1 And used_at is null AND expires_at > NOW()
+            order by created_at DESC
+            LIMIT 1
+            `, [userId]
+        )
+
+        if (resetResult.rows.length === 0) {
+            return res.status(400).json({ message: "Invalid or expired code." })
+        }
+        const resetRow = resetResult.rows[0];
+        //Block if too many request
+        if (resetRow.attempts >= MAX_ATTEMPTS) {
+            return res.status(429).json({ message: "Too many attemps. Request a new code." })
+        }
+
+        //Compare OTP
+        const ok = await bcrypt.compare(String(code), resetRow.code_hash);
+        if (!ok) {
+            //increment attempt
+            await pool.query(`UPDATE password_resets SET attempts = attempts + 1 WHERE id = $1`, [resetRow.id]);
+            return res.status(400).json({ message: "Invalid or expired code." })
+        }
+        //success -> issue resetToken
+        const resetToken = generateResetToken(userId)
+        return res.status(200).json({ resetToken })
+    } catch (error) {
+        console.error("Error in verifyResetCode:", error.message);
+        return res.status(500).json({ message: "Server error" });
+    }
+}
+
+export async function resetPassword(req, res) {
+
+    try {
+        const { resetToken, newPassword } = req.body
+
+        if (!resetToken || !newPassword) {
+            return res.status(400).json({ message: "resetToken and newPassword are required." })
+        }
+
+        //basic password rule (matching the froont-end )
+        if (newPassword.length < 12) {
+            return res.status(400).json({ message: "Password must be at least 12 characters." })
+        }
+
+        //verify token
+        let payload;
+        try {
+            payload = jwt.verify(resetToken, process.env.JWT_SECRET);
+        } catch (error) {
+            return res.status(401).json({ message: "Invalid or expired reset token." })
+        }
+
+        // 2) check purpose
+        if (payload.purpose !== "pw_reset" || !payload.id) {
+            return res.status(401).json({ message: "Invalid reset token." });
+        }
+
+        const userId = payload.id;
+
+        // 3) hash new password
+        const passwordHash = await bcrypt.hash(newPassword, SALT_ROUND);
+
+        // 4) update user password
+        await pool.query(
+            "UPDATE users SET password_hash = $1 WHERE id = $2",
+            [passwordHash, userId]
+        );
+
+        // 5) mark all active reset requests as used
+        await pool.query(
+            "UPDATE password_resets SET used_at = NOW() WHERE user_id = $1 AND used_at IS NULL",
+            [userId]
+        );
+
+        return res.status(200).json({ message: "Password updated successfully." });
+    } catch (error) {
+        console.error("Error in resetPassword:", error.message);
         return res.status(500).json({ message: "Server error" });
     }
 }
