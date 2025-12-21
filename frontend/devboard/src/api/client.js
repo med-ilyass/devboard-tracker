@@ -10,6 +10,7 @@ export async function apiRequest(path, { method = "GET", body, token } = {}) {
     }
     let res;
     try {
+        //console.log("AUTH:", headers.Authorization);
         res = await fetch(path, {
             method,
             headers,

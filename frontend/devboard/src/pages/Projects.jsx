@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { getProjects, createProject, deleteProject } from "../api/projects";
 
 export default function Projects() {
@@ -18,6 +18,8 @@ export default function Projects() {
         }
         async function load() {
             try {
+                setLoading(true)
+                setError("")
                 // first we call getProjects(token)
                 const data = await getProjects(token);
                 // then second we setProject
@@ -35,8 +37,7 @@ export default function Projects() {
     async function handleCreate(e) {
         e.preventDefault();
         setError("");
-        setLoading(true);
-
+        setCreating(true);
         const form = new FormData(e.target);
         const name = form.get("name");
         const description = form.get("description");
@@ -53,7 +54,6 @@ export default function Projects() {
 
     }
     async function handleArchive(projectId) {
-        setLoading(false)
         setError("")
         try {
             await deleteProject(token, projectId)
@@ -62,14 +62,10 @@ export default function Projects() {
             setError(error.message)
         }
     }
-
-
-
-
     return (
         <div className="page">
             <h1>Projects</h1>
-            {error && <p style={{ color: " red" }}>{error}</p>}
+            {error && <p style={{ color: "red" }}>{error}</p>}
             <form className="form" onSubmit={handleCreate}>
                 <div className="field">
                     <label>Name:</label>
@@ -87,7 +83,7 @@ export default function Projects() {
                         <div>{p.description}</div>
                         <small>Status : {p.status}</small>
                         <div>
-                            <button onClick={() => { handleArchive(p.id) }}>Archive</button>
+                            <button type="button" onClick={() => { handleArchive(p.id) }}>Archive</button>
                         </div>
                     </li>))}
                 </ul>
