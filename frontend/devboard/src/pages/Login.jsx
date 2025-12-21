@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import Snowfall from "react-snowfall"
+
 export default function Login({ onLogin }) {
 
     const [error, setError] = useState("");
     const navigate = useNavigate();
 
     async function handleSubmit(e) {
-        e.prevenDefault();
+        e.preventDefault();
         setError("");
 
         const form = new FormData(e.target);
@@ -18,8 +20,8 @@ export default function Login({ onLogin }) {
 
         try {
             const res = await fetch("/api/auth/login", {
-                method: POST,
-                headers: { "Content-type": "application/json" },
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password })
             })
 

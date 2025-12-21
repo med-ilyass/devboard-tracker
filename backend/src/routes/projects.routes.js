@@ -1,7 +1,7 @@
 import { Router } from "express";
 
 import { getProjects, createProject, getProjectById, updateProject, deleteProject } from "../controllers/projects.controller.js";
-import { authMiddleware } from "../middleware/auth.js";
+import  authMiddleware  from "../middleware/auth.js";
 
 const router = Router();
 
