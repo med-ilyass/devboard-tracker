@@ -1,7 +1,7 @@
 import { Router } from "express"
 //importt controller functions
 import { register, login, getMe } from "../controllers/auth.controller.js"
-import { authMiddleware } from "../middleware/auth.js";
+import authMiddleware from "../middleware/auth.js";
 import { verifyResetCode, forgotPassword, resetPassword } from "../controllers/auth.controller.js";
 
 const router = Router();
@@ -15,11 +15,9 @@ router.post("/login", login)
 //GET /api/auth/me
 //protecting the route, adding auth middle ware
 router.get("/me", authMiddleware, getMe)
-
 router.post("/forgot-password", forgotPassword)
 router.post("/reset-password", resetPassword)
 router.post("/verify-reset-code", verifyResetCode)
-
 export default router;
 
 

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom"
-
+import Snowfall from "react-snowfall"
 export default function ForgotPassword() {
 
     const [error, setError] = useState("");
@@ -41,5 +41,6 @@ export default function ForgotPassword() {
                 <p style={{ marginTop: "1rem" }}>Back to <Link to="/login">Login</Link></p>
             </form>
         </div>
+
     );
 };

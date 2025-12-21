@@ -34,6 +34,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+
         <Route path='/' element={<Project />} />
         <Route path='/login' element={<Login onLogin={handleLogin} />} />
         <Route path='/register' element={<Register />} />
