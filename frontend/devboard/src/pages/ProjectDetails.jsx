@@ -156,7 +156,7 @@ export default function ProjectDetails() {
                             <textarea name="description" rows={3} required />
                         </div>
                         <div className="field" >
-                            <label>Priority</label>
+                            <label>Priority </label>
                             <select name="priority" defaultValue="medium">
                                 <option value="low">low</option>
                                 <option value="medium">medium</option>
