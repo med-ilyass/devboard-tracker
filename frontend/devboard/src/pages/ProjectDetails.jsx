@@ -1,26 +1,28 @@
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
-
-//importing getProjectById from api/projects
-//importing tasks, createTasks and deleteTask from api/tasks
+import { getProjectById } from "../api/projects.js";
+import { createTask, deleteTask, updateTask, getTasks } from "../api/tasks.js";
 
 export default function ProjectDetails() {
-
     const navigate = useNavigate();
     const { projectId } = useParams();
     const token = localStorage.getItem("token")
-
     //page state
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("")
-
     //data state 
     const [project, setProject] = useState(null)
     const [tasks, setTasks] = useState([])
-
     //form state
     const [creatingTask, setCreatingTask] = useState(false)
-
+    const [editingTaskId, setEditingTaskId] = useState(null);
+    const [editForm, setEditForm] = useState({
+        title: "",
+        description: "",
+        priority: "medium",
+        status: "backlog"
+    });
+    const [savingEdit, setSavingEdit] = useState(false)
     useEffect(() => {
         if (!token) {
             navigate("/login")
@@ -37,14 +39,17 @@ export default function ProjectDetails() {
                 setLoading(true)
                 setError("")
                 //1- load project
-                //const proj = await getProhectById(token, id)
+                //const proj = await getProjectById(token, id)
                 //setProject(proj)
-
+                const proj = await getProjectById(token, id)
+                setProject(proj)
                 //2- load tasks for this project
                 //const ts = await getTasks(token, id)
                 //setTasks(ts)
+                const ts = await getTasks(token, id)
+                setTasks(ts);
             } catch (error) {
-                setError(error)
+                setError(error.message)
             } finally {
                 setLoading(false)
             }
@@ -52,6 +57,39 @@ export default function ProjectDetails() {
         load();
     }, [token, navigate, projectId])
 
+    function startEdit(task) {
+        setEditingTaskId(task.id);
+        setEditForm({
+            title: task.title ?? "",
+            description: task.description ?? "",
+            priority: task.priority ?? "medium",
+            status: task.status ?? "backlog",
+        });
+    }
+    function cancelEdit() {
+        setEditingTaskId(null);
+    }
+    async function handleSaveEdit(taskId) {
+        setError("");
+        setSavingEdit(true);
+
+        try {
+            const updated = await updateTask(token, taskId, {
+                title: editForm.title,
+                description: editForm.description,
+                priority: editForm.priority,
+                status: editForm.status,
+            });
+
+            // update UI list
+            setTasks((prev) => prev.map((t) => (t.id === taskId ? updated : t)));
+            setEditingTaskId(null);
+        } catch (error) {
+            setError(error.message);
+        } finally {
+            setSavingEdit(false);
+        }
+    }
     async function handleCreatetask(e) {
         e.preventDefault();
         setError("");
@@ -66,8 +104,16 @@ export default function ProjectDetails() {
             //call createTask(token, playload)
             //then update task list: setTasks((prev) => [\newTask, ...prev])
             //reset Form 
+            const newTask = await createTask(token, {
+                project_id: Number(projectId),
+                title,
+                description,
+                priority,
+            })
+            setTasks((prev) => [newTask, ...prev])
+            e.target.reset();
         } catch (error) {
-            setError(error)
+            setError(error.message)
         } finally {
             setCreatingTask(false)
         }
@@ -79,8 +125,10 @@ export default function ProjectDetails() {
         try {
             //call deleteTask(token, taskId)
             //remove from UI: setTasks((prev) => prev.filter(t => t.id !== taskId))
+            await deleteTask(token, taskId)
+            setTasks((prev) => prev.filter((t) => t.id !== taskId))
         } catch (error) {
-            setError(error)
+            setError(error.message)
         }
     }
 
@@ -108,7 +156,7 @@ export default function ProjectDetails() {
                             <textarea name="description" rows={3} required />
                         </div>
                         <div className="field" >
-                            <label>Priority</label>
+                            <label>Priority </label>
                             <select name="priority" defaultValue="medium">
                                 <option value="low">low</option>
                                 <option value="medium">medium</option>
@@ -123,18 +171,84 @@ export default function ProjectDetails() {
                     {tasks.length === 0 ? (<p>No Task yet.</p>) : (
                         <>
                             <ul>
-                                {tasks.map((t) => {
+                                {tasks.map((t) => (
                                     <li key={t.id} style={{ marginTop: "1rem" }}>
-                                        <strong>{t.title}</strong>
-                                        {t.description && <div>{t.description}</div>}
-                                        <small>
-                                            Status : {t.status} | Priority : {t.priority}
-                                        </small>
-                                        <div>
-                                            <button type="submit" onClick={() => handleDeleteTask(t.id)}>Delete</button>
-                                        </div>
+                                        {editingTaskId === t.id ? (
+                                            <>
+                                                <div className="field">
+                                                    <label>Title</label>
+                                                    <input
+                                                        value={editForm.title}
+                                                        onChange={(e) => setEditForm((p) => ({ ...p, title: e.target.value }))}
+                                                    />
+                                                </div>
+
+                                                <div className="field">
+                                                    <label>Description</label>
+                                                    <textarea
+                                                        rows={3}
+                                                        value={editForm.description}
+                                                        onChange={(e) => setEditForm((p) => ({ ...p, description: e.target.value }))}
+                                                    />
+                                                </div>
+
+                                                <div className="field">
+                                                    <label>Status</label>
+                                                    <select
+                                                        value={editForm.status}
+                                                        onChange={(e) => setEditForm((p) => ({ ...p, status: e.target.value }))}
+                                                    >
+                                                        <option value="backlog">backlog</option>
+                                                        <option value="in_progress">in_progress</option>
+                                                        <option value="done">done</option>
+                                                    </select>
+                                                </div>
+
+                                                <div className="field">
+                                                    <label>Priority</label>
+                                                    <select
+                                                        value={editForm.priority}
+                                                        onChange={(e) => setEditForm((p) => ({ ...p, priority: e.target.value }))}
+                                                    >
+                                                        <option value="low">low</option>
+                                                        <option value="medium">medium</option>
+                                                        <option value="high">high</option>
+                                                    </select>
+                                                </div>
+
+                                                <button
+                                                    type="button"
+                                                    disabled={savingEdit}
+                                                    onClick={() => handleSaveEdit(t.id)}
+                                                >
+                                                    {savingEdit ? "Saving..." : "Save"}
+                                                </button>
+
+                                                <button type="button" onClick={cancelEdit} disabled={savingEdit}>
+                                                    Cancel
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <strong>{t.title}</strong>
+                                                {t.description && <div>{t.description}</div>}
+                                                <small>
+                                                    Status: {t.status} | Priority: {t.priority}
+                                                </small>
+
+                                                <div>
+                                                    <button type="button" onClick={() => startEdit(t)}>
+                                                        Edit
+                                                    </button>
+
+                                                    <button type="button" onClick={() => handleDeleteTask(t.id)}>
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                            </>
+                                        )}
                                     </li>
-                                })}
+                                ))}
                             </ul>
                         </>
                     )}
