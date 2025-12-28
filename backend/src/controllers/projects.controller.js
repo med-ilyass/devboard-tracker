@@ -9,7 +9,7 @@ export async function getProjects(req, res) {
         const result = await pool.query(
             `SELECT id, name, description, owner_id, status, created_at
             FROM projects
-            WHERE owner_id = $1
+            WHERE owner_id = $1 and status = 'ACTIVE'
             ORDER BY created_at DESC`,
             [ownerId]
         );

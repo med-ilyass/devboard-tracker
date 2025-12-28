@@ -49,6 +49,7 @@ export default function Projects() {
             setError(error.message)
         } finally {
             setCreating(false)
+            setLoading(false)
         }
 
     }
@@ -62,10 +63,6 @@ export default function Projects() {
             setError(error.message)
         }
     }
-
-
-
-
     return (
         <div className="page">
             <h1>Projects</h1>
