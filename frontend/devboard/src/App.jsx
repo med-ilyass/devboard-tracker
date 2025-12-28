@@ -4,6 +4,7 @@ import Layout from './components/Layout.jsx'
 import Login from './pages/Login.jsx'
 import Register from './pages/Register.jsx'
 import Project from './pages/Projects.jsx'
+import ProjectDetails from './pages/ProjectDetails.jsx'
 import NotFound from './pages/NotFound.jsx'
 import ResetPassword from './pages/ResetPassword.jsx'
 import ForgotPassword from './pages/ForgotPassword.jsx'
@@ -22,27 +23,26 @@ function App() {
   }
 
   useEffect(() => {
-    const savedUser = localStorage.getItem("devboard_user")
+    const savedUser = localStorage.getItem("devboard_user");
     const savedToken = localStorage.getItem("devboard_token");
 
     if (savedToken && savedUser) {
-      setUser(JSON.stringify(savedUser))
+      setUser(JSON.parse(savedUser));
       setToken(savedToken);
     }
-  }, [])
+  }, []);
 
   return (
-    <BrowserRouter>
-      <Routes>
+    <Routes>
 
-        <Route path='/' element={<Project />} />
-        <Route path='/login' element={<Login onLogin={handleLogin} />} />
-        <Route path='/register' element={<Register />} />
-        <Route path='*' element={<NotFound />} />
-        <Route path='/forgot-password' element={<ForgotPassword />} />
-        <Route path='/reset-password' element={<ResetPassword />} />
-      </Routes>
-    </BrowserRouter>
+      <Route path='/' element={<Project />} />
+      <Route path='/login' element={<Login onLogin={handleLogin} />} />
+      <Route path='/register' element={<Register />} />
+      <Route path='/forgot-password' element={<ForgotPassword />} />
+      <Route path='/reset-password' element={<ResetPassword />} />
+      <Route path='*' element={<NotFound />} />
+      <Route path='/projects' element={<Project />} />
+    </Routes>
   )
 }
 export default App
