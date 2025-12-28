@@ -1,5 +1,9 @@
-import { apiRequest } from "./client";
+import { apiRequest } from "./client.js";
 
+
+export async function getProjectById(token, projectId) {
+    return await apiRequest(`/api/projects/${projectId}`, {token})
+}
 export async function getProjects(token) {
     return await apiRequest("/api/projects", { token })
 }
