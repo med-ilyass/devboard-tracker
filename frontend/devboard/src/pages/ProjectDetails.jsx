@@ -1,12 +1,13 @@
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { getProjectById } from "../api/projects.js";
 import { createTask, deleteTask, updateTask, getTasks } from "../api/tasks.js";
 
 export default function ProjectDetails() {
     const navigate = useNavigate();
-    const { projectId } = useParams();
-    const token = localStorage.getItem("token")
+    const { id } = useParams();
+    const token = localStorage.getItem("devboard_token"); // ✅ define token here
+    const projectId = Number(id);
     //page state
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("")
@@ -25,37 +26,41 @@ export default function ProjectDetails() {
     const [savingEdit, setSavingEdit] = useState(false)
     useEffect(() => {
         if (!token) {
-            navigate("/login")
+            navigate("/login");
             return;
         }
-        //validate projectId is a number
-        const id = Number(projectId)
-        if (Number.isNaN(id)) {
-            setError("Invalid project id.")
+
+        if (Number.isNaN(projectId)) {
+            setError("Invalid project id.");
             return;
         }
+
         async function load() {
             try {
-                setLoading(true)
-                setError("")
-                //1- load project
-                //const proj = await getProjectById(token, id)
-                //setProject(proj)
-                const proj = await getProjectById(token, id)
-                setProject(proj)
-                //2- load tasks for this project
-                //const ts = await getTasks(token, id)
-                //setTasks(ts)
-                const ts = await getTasks(token, id)
+                setLoading(true);
+                setError("");
+
+                const proj = await getProjectById(token, projectId);
+                setProject(proj);
+
+                const ts = await getTasks(token, projectId);
                 setTasks(ts);
-            } catch (error) {
-                setError(error.message)
+            } catch (err) {
+                // if JWT expired, force login
+                if (String(err.message).toLowerCase().includes("expired")) {
+                    localStorage.removeItem("devboard_token");
+                    localStorage.removeItem("devboard_user");
+                    navigate("/login");
+                    return;
+                }
+                setError(err.message);
             } finally {
-                setLoading(false)
+                setLoading(false);
             }
         }
+
         load();
-    }, [token, navigate, projectId])
+    }, [token, navigate, projectId]);
 
     function startEdit(task) {
         setEditingTaskId(task.id);
@@ -105,7 +110,7 @@ export default function ProjectDetails() {
             //then update task list: setTasks((prev) => [\newTask, ...prev])
             //reset Form 
             const newTask = await createTask(token, {
-                project_id: Number(projectId),
+                project_id: projectId,
                 title,
                 description,
                 priority,

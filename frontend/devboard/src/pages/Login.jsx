@@ -33,6 +33,7 @@ export default function Login({ onLogin }) {
             console.log("Login success:", data)
             onLogin(data.user, data.token)
             navigate("/")
+            console.log("TOKEN:", data.token);
         } catch (error) {
             console.error({ error: "Network Error" })
             setError("Network Error!!!")

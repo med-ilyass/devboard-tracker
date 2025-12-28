@@ -80,12 +80,14 @@ export default function Projects() {
             {loading ? (<p>Loading ...</p>) : projects.length === 0 ? <p>No project yet.</p> : (
                 <ul>
                     {projects.map((p) => (<li key={p.id} style={{ marginBottom: "1rem" }} >
-                        <strong>{p.name}</strong>
-                        <div>{p.description}</div>
-                        <small>Status : {p.status}</small>
-                        <div>
-                            <button onClick={() => { handleArchive(p.id) }}>Archive</button>
-                        </div>
+                        <Link key={p.id} to={`/projects/${p.id}`} className="project-card">
+                            <strong>{p.name}</strong>
+                            <div>{p.description}</div>
+                            <small>Status : {p.status}</small>
+                        </Link>
+                            <div style={{ marginTop: "8px" }}>
+                                <button onClick={() => { handleArchive(p.id) }}>Archive</button>
+                            </div>
                     </li>))}
                 </ul>
             )
