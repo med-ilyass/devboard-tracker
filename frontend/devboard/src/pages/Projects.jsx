@@ -8,7 +8,7 @@ export default function Projects() {
     const [error, setError] = useState("");
     const [projects, setProjects] = useState([])
     const [creating, setCreating] = useState(false)
-    const token = localStorage.getItem("token")
+    const token = localStorage.getItem("devboard_token")
 
 
     useEffect(() => {
