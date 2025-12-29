@@ -204,7 +204,7 @@ export default function ProjectDetails() {
                                                         onChange={(e) => setEditForm((p) => ({ ...p, status: e.target.value }))}
                                                     >
                                                         <option value="backlog">backlog</option>
-                                                        <option value="in_progress">in_progress</option>
+                                                        <option value="in_progress">in progress</option>
                                                         <option value="done">done</option>
                                                     </select>
                                                 </div>
