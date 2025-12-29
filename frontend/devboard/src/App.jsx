@@ -42,6 +42,8 @@ function App() {
       <Route path='/reset-password' element={<ResetPassword />} />
       <Route path='*' element={<NotFound />} />
       <Route path='/projects' element={<Project />} />
+      <Route path="/projects/:id" element={<ProjectDetails />} />
+
     </Routes>
   )
 }
