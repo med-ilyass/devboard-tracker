@@ -9,7 +9,7 @@ import ProjectDetails from './pages/ProjectDetails.jsx'
 import NotFound from './pages/NotFound.jsx'
 import ResetPassword from './pages/ResetPassword.jsx'
 import ForgotPassword from './pages/ForgotPassword.jsx'
-import { Routes, Route, BrowserRouter, Navigate } from "react-router-dom"
+import { Routes, Route } from "react-router-dom"
 import RequiredAuth from './components/RequiredAuth.jsx'
 
 function App() {
@@ -36,21 +36,24 @@ function App() {
 
   return (
     <Routes>
-
-      <Route path="/" element={<Home />} />
-      <Route path='/login' element={<Login onLogin={handleLogin} />} />
-      <Route path='/register' element={<Register />} />
-      <Route path='/forgot-password' element={<ForgotPassword />} />
-      <Route path='/reset-password' element={<ResetPassword />} />
-      {/* Protected */}
-      <Route element={<RequiredAuth />}>
-        <Route path="/projects" element={<Project />} />
-        <Route path="/projects/:id" element={<ProjectDetails />} />
-      </Route>
-      {/* Fall Back
+      <Route element={<Layout user={user} setUser={setUser} setToken={setToken} />}>
+        <Route path="/" element={<Home />} />
+        <Route path='/login' element={<Login onLogin={handleLogin} />} />
+        <Route path='/register' element={<Register />} />
+        <Route path='/forgot-password' element={<ForgotPassword />} />
+        <Route path='/reset-password' element={<ResetPassword />} />
+        {/* Protected */}
+        <Route element={<RequiredAuth />}>
+          <Route path="/projects" element={<Project />} />
+          <Route path="/projects/:id" element={<ProjectDetails />} />
+        </Route>
+        {/* Fall Back
           <Route path='*' element={<Navigate to="/" replace/>}/>
       */}
-      <Route path='*' element={<NotFound />} />
+        <Route path='*' element={<NotFound />} />
+      </Route>
+
+
     </Routes>
   )
 }
