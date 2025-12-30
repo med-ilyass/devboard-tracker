@@ -21,6 +21,9 @@
     animation: logo-spin infinite 20s linear;
   }
 }
+.content {
+  padding-bottom: 32px;
+}
 .footer {
   border-top: 1px solid #ddd;
   padding: 12px;
