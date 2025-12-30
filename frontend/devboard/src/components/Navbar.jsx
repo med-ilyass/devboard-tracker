@@ -1,16 +1,32 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
-export default function Navbar() {
-    return (
-        <header className="navbar">
-            <div className="navbar-left">
-                <span className="logo">Devboard</span>
-            </div>
-            <div className="navbar-right">
-                <Link to='/'>Projects</Link>
-                <Link to='/login'>Login</Link>
-                <Link to='/register'>Register</Link>
-            </div>
-        </header>
-    )
+export default function Navbar({ user, token, onLogout }) {
+  return (
+    <header className="navbar">
+      <div className="navbar-left">
+        <Link to="/" className="logo">
+          Devboard
+        </Link>
+      </div>
+
+      <div className="navbar-right">
+        {token ? (
+          <>
+            <Link to="/projects">Projects</Link>
+            <span className="user">
+              {user?.name || user?.email}
+            </span>
+            <button type="button" onClick={onLogout}>
+              Logout
+            </button>
+          </>
+        ) : (
+          <>
+            <Link to="/login">Login</Link>
+            <Link to="/register">Register</Link>
+          </>
+        )}
+      </div>
+    </header>
+  );
 }
