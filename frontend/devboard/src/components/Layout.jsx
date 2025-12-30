@@ -1,5 +1,6 @@
 import { Outlet, useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
+import Footer from "./Footer";
 
 export default function Layout({ user, setUser, setToken }) {
   const navigate = useNavigate();
@@ -24,6 +25,7 @@ export default function Layout({ user, setUser, setToken }) {
       <main className="page">
         <Outlet />
       </main>
+      <Footer />
     </>
   );
 }
