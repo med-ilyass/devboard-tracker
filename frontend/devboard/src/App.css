@@ -11,6 +11,7 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -21,13 +22,75 @@
     animation: logo-spin infinite 20s linear;
   }
 }
+
 .content {
   padding-bottom: 32px;
 }
+
 .footer {
   border-top: 1px solid #ddd;
   padding: 12px;
   text-align: center;
   font-size: 14px;
   color: #666;
+}
+
+.home {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 16px;
+}
+
+.home-title {
+  font-size: 48px;
+  margin: 0 0 10px;
+}
+
+.home-subtitle {
+  font-size: 18px;
+  color: #666;
+  margin: 0 0 24px;
+}
+
+.home-actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.btn {
+  display: inline-block;
+  padding: 12px 16px;
+  border-radius: 10px;
+  text-decoration: none;
+  border: 1px solid #ddd;
+}
+
+.btn.primary {
+  background: #111;
+  color: white;
+  border-color: #111;
+}
+
+.btn.secondary {
+  background: white;
+  color: #111;
+}
+
+.home-features {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.feature {
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+@media (max-width: 800px) {
+  .home-features {
+    grid-template-columns: 1fr;
+  }
 }
