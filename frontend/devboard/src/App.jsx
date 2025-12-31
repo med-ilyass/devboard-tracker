@@ -39,7 +39,7 @@ function App() {
       <Route element={<Layout user={user} setUser={setUser} setToken={setToken} />}>
         <Route path="/" element={<Home />} />
         <Route path='/login' element={<Login onLogin={handleLogin} />} />
-        <Route path='/register' element={<Register />} />
+        <Route path='/register' element={<Register onLogin={handleLogin}/>} />
         <Route path='/forgot-password' element={<ForgotPassword />} />
         <Route path='/reset-password' element={<ResetPassword />} />
         {/* Protected */}

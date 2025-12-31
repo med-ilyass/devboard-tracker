@@ -3,14 +3,21 @@ import pool from "../config/db.js"
 export async function getProjects(req, res) {
     // res.json({ message: "get Projects works!" })
     // For now: returns all projects (later I can filter by req.user.id)
+    //changing the getproject function to get only the project owned by me and where i am a member at 
     try {
         const ownerId = req.user.id;
         console.log("✅ getProjects handler hit");
         const result = await pool.query(
-            `SELECT id, name, description, owner_id, status, created_at
-            FROM projects
-            WHERE owner_id = $1 and status = 'ACTIVE'
-            ORDER BY created_at DESC`,
+            `SELECT p.id, p.name, p.description, p.owner_id, p.status, p.created_at,
+                CASE
+                    WHEN p.owner_id = $1 THEN 'owner'
+                    ELSE pm.role
+                END AS my_role
+            FROM projects p
+            LEFT JOIN project_members pm
+            ON pm.project_id = p.id AND pm.user_id = $1
+            WHERE p.owner_id = $1 OR pm.user_id = $1
+            ORDER BY p.created_at DESC;`,
             [ownerId]
         );
         res.json(result.rows);
