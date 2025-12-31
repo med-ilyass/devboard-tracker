@@ -29,7 +29,7 @@ export default function Register({ onLogin }) {
         try {
             const res = await fetch("/api/auth/register", {
                 method: "POST",
-                headers: { "Content-type": "application/json" },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ name, email, password })
             });
             const data = await res.json();
@@ -38,7 +38,6 @@ export default function Register({ onLogin }) {
                 setError(data.message || "Registration failed")
                 return;
             }
-
             onLogin(data.user, data.token)
             navigate("/")
         } catch (error) {
