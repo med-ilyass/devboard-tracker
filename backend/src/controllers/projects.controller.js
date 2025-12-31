@@ -11,7 +11,7 @@ export async function getProjects(req, res) {
             `SELECT p.id, p.name, p.description, p.owner_id, p.status, p.created_at,
                 CASE
                     WHEN p.owner_id = $1 THEN 'owner'
-                    ELSE pm.role
+                    ELSE pm.role::text
                 END AS my_role
             FROM projects p
             LEFT JOIN project_members pm
@@ -56,33 +56,42 @@ export async function createProject(req, res) {
 }
 //get a specific project
 export async function getProjectById(req, res) {
-    // res.json({ message: "Get projects by Id Works!" })
-    try {
-        const { projectId } = req.params;
-        const id = Number(projectId);
+  try {
+    const { projectId } = req.params;
+    const id = Number(projectId);
 
-        if (Number.isNaN(id)) {
-            return res.status(400).json({ message: "Invalid project id" })
-        }
-        const ownerId = req.user.id;
-
-        const result = await pool.query(
-            `SELECT id, name, description, owner_id, status, created_at 
-            FROM projects
-            WHERE id = $1 AND owner_id = $2`,
-            [id, ownerId]
-        );
-
-        if (result.rows.length === 0) {
-            return res.status(404).json({ message: "Project not found!" })
-        }
-        const project = result.rows[0]
-        res.json(project)
-    } catch (error) {
-        console.error("Error in get project by id", error.message)
-        res.status(500).json({ error: "Failed to get project by Id" })
+    if (Number.isNaN(id)) {
+      return res.status(400).json({ message: "Invalid project id" });
     }
 
+    const userId = req.user.id;
+
+    const result = await pool.query(
+      `
+      SELECT
+        p.id, p.name, p.description, p.owner_id, p.status, p.created_at,
+        CASE
+          WHEN p.owner_id = $1 THEN 'owner'
+          ELSE pm.role::text
+        END AS my_role
+      FROM projects p
+      LEFT JOIN project_members pm
+        ON pm.project_id = p.id AND pm.user_id = $1
+      WHERE p.id = $2 AND (p.owner_id = $1 OR pm.user_id = $1)
+      LIMIT 1
+      `,
+      [userId, id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Project not found!" });
+    }
+
+    return res.json(result.rows[0]);
+  } catch (error) {
+    console.error("Error in getProjectById:", error.message);
+    return res.status(500).json({ error: "Failed to get project by Id" });
+  }
 }
 //Update project
 export async function updateProject(req, res) {
