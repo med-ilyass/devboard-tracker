@@ -16,7 +16,7 @@ export async function getProjects(req, res) {
             FROM projects p
             LEFT JOIN project_members pm
             ON pm.project_id = p.id AND pm.user_id = $1
-            WHERE p.owner_id = $1 OR pm.user_id = $1
+            WHERE (p.owner_id = $1 OR pm.user_id = $1) AND status= 'ACTIVE'
             ORDER BY p.created_at DESC;`,
             [ownerId]
         );
