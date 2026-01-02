@@ -1,4 +1,3 @@
-import { use } from "react";
 import pool from "../config/db";
 
 function isValidRole(role) {
@@ -84,5 +83,28 @@ export async function addMember(req, res) {
         console.error("Error adding new member: ", error.message)
         return res.status(500).json({ message: "Server Error" })
     }
-
+}
+//DELETE /api/projects/:projectId/members/:userId (Owner Only)
+export async function removeMember(req, res) {
+    try {
+        const projectId = Number(req.params.projectId);
+        const memeberUserId = Number(req.params.userId)
+        if (Number.isNaN(projectId) || Number.isNaN(memeberUserId)) {
+            return res.status(400).json({ message: "Invalid Id." })
+        }
+        const ownerId = req.user.id;
+        //owner id
+        const ownerCheck = await pool.query(`SELECT id FROM projects WHERE id = $1 AND owner_id = $2`, [projectId, ownerId])
+        if (ownerCheck.rows.length === 0) {
+            res.status(400).json({ message: "Only the owner can remove members." })
+        }
+        const del = await pool.query(`DELETE FROM project_members WHERE project_id = $1 AND user_id = $2 RETURNING user_id`, [projectId, memeberUserId]);
+        if (del.rows.length === 0) {
+            res.status(400).json({ message: "Member not found" })
+        }
+        return res.json({ Message: "Member removed" })
+    } catch (error) {
+        console.error("Error removing member: ", error.message)
+        return res.status(500).json({ message: "Server Error" })
+    }
 }
