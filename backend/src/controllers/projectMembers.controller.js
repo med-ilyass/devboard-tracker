@@ -1,4 +1,4 @@
-import pool from "../config/db";
+import pool from "../config/db.js";
 
 function isValidRole(role) {
     return role === "viewer" || role === "editor"
@@ -6,7 +6,7 @@ function isValidRole(role) {
 //GET /api/projects/:projectId/members
 export async function listMembers(req, res) {
     try {
-        const projectId = Numebr(req.params.projectId);
+        const projectId = Number(req.params.projectId);
         if (Number.isNaN(projectId)) {
             return res.status(400).json({ message: "Invalid project id." })
         }
@@ -15,9 +15,9 @@ export async function listMembers(req, res) {
 
         const ownerCheck = await pool.query(`select id from projects where id = $1 and owner_id = $2`, [projectId, userId]);
         if (ownerCheck.rows.length === 0) {
-            return res.status(400).json({ message: "Only the Owner can view members." })
+            return res.status(403).json({ message: "Only the Owner can view members." })
         }
-        const result = pool.query(`
+        const result = await pool.query(`
             SELECT pm.user_id, u.email, u.name, pm.role, pm.created_at
             FROM project_members pm
             JOIN users u ON u.id = pm.user_id
@@ -25,7 +25,7 @@ export async function listMembers(req, res) {
             ORDER BY pm.created_at DESC
             `, [projectId]);
 
-        return res.status(200).json(result);
+        return res.status(200).json(result.rows);
     } catch (error) {
         console.error("Error in List members: ", error.message)
         return res.status(500).json({ message: "Server Error" })
@@ -40,7 +40,7 @@ export async function addMember(req, res) {
             return res.status(400).json({ message: "Invalid project id" })
         }
         const ownerId = req.user.id;
-        const { email, role } = res.body;
+        const { email, role } = req.body;
         if (!email || !role) {
             return res.status(400).json({ message: "Email and role are required" })
         }
@@ -49,9 +49,9 @@ export async function addMember(req, res) {
         }
         //owner only
 
-        const ownerCheck = await pool.query(`select id from projects where id = $1 and email = $2`, [ownerId, email])
+        const ownerCheck = await pool.query(`select id from projects where id = $1 and owner_id = $2`, [projectId, ownerId])
         if (ownerCheck.rows.length === 0) {
-            return res.status(400).json({ message: "Only the owner can add members." })
+            return res.status(403).json({ message: "Only the owner can add members." })
         }
         //finding the user by his email
         const userRes = await pool.query(`Select id, email, name FROM users WHERE email = $1`, [email]);
@@ -61,7 +61,7 @@ export async function addMember(req, res) {
         const memberUserId = userRes.rows[0].id;
         //In case owner wants to add him self as a member -- even though I will prevent having the owner on the list
         if (memberUserId === ownerId) {
-            return res.status(400).json({ message: "Owner is already ownerl cannot be added as member" })
+            return res.status(400).json({ message: "Owner is already the owner cannot be added as member" })
         }
         const upsert = await pool.query(`
             INSERT INTO project_members (project_id, user_id, role)
@@ -86,25 +86,37 @@ export async function addMember(req, res) {
 }
 //DELETE /api/projects/:projectId/members/:userId (Owner Only)
 export async function removeMember(req, res) {
-    try {
-        const projectId = Number(req.params.projectId);
-        const memeberUserId = Number(req.params.userId)
-        if (Number.isNaN(projectId) || Number.isNaN(memeberUserId)) {
-            return res.status(400).json({ message: "Invalid Id." })
-        }
-        const ownerId = req.user.id;
-        //owner id
-        const ownerCheck = await pool.query(`SELECT id FROM projects WHERE id = $1 AND owner_id = $2`, [projectId, ownerId])
-        if (ownerCheck.rows.length === 0) {
-            res.status(400).json({ message: "Only the owner can remove members." })
-        }
-        const del = await pool.query(`DELETE FROM project_members WHERE project_id = $1 AND user_id = $2 RETURNING user_id`, [projectId, memeberUserId]);
-        if (del.rows.length === 0) {
-            res.status(400).json({ message: "Member not found" })
-        }
-        return res.json({ Message: "Member removed" })
-    } catch (error) {
-        console.error("Error removing member: ", error.message)
-        return res.status(500).json({ message: "Server Error" })
+  try {
+    const projectId = Number(req.params.projectId);
+    const memberUserId = Number(req.params.userId);
+
+    if (Number.isNaN(projectId) || Number.isNaN(memberUserId)) {
+      return res.status(400).json({ message: "Invalid Id." });
     }
+
+    const ownerId = req.user.id;
+
+    const ownerCheck = await pool.query(
+      `SELECT id FROM projects WHERE id = $1 AND owner_id = $2`,
+      [projectId, ownerId]
+    );
+
+    if (ownerCheck.rows.length === 0) {
+      return res.status(403).json({ message: "Only the owner can remove members." });
+    }
+
+    const del = await pool.query(
+      `DELETE FROM project_members WHERE project_id = $1 AND user_id = $2 RETURNING user_id`,
+      [projectId, memberUserId]
+    );
+
+    if (del.rows.length === 0) {
+      return res.status(404).json({ message: "Member not found" });
+    }
+
+    return res.json({ message: "Member removed" });
+  } catch (error) {
+    console.error("Error removing member:", error.message);
+    return res.status(500).json({ message: "Server Error" });
+  }
 }
