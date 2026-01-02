@@ -1,5 +1,9 @@
+import { use } from "react";
 import pool from "../config/db";
 
+function isValidRole(role) {
+    return role === "viewer" || role === "editor"
+}
 //GET /api/projects/:projectId/members
 export async function listMembers(req, res) {
     try {
@@ -30,3 +34,34 @@ export async function listMembers(req, res) {
 }
 //POST /api/projects/:projectId/members
 //body {email, role }
+export async function addMember(req, res) {
+    try {
+        const projectId = Number(req.params.projectId)
+        if (Number.isNaN(projectId)) {
+            return res.status(400).json({ message: "Invalid project id" })
+        }
+        const ownerId = req.user.id;
+        const { email, role } = res.body;
+        if (!email || !role) {
+            return res.status(400).json({ message: "Email and role are required" })
+        }
+        if (!isValidRole(role)) {
+            return res.status(400).json({ message: "role must be viewer or editor" })
+        }
+        //owner only
+        const userRes = await pool.query(`Select id, email, name FROM users WHERE email = $1`, [email]);
+        if (userRes.rows.length === 0) {
+            return res.status(404).json({ message: "User with that email not found" })
+        }
+        const memberUserId = userRes.rows[0].id;
+        //In case owner wants to add him self as a member -- even though I will prevent having the owner on the list
+        if (memberUserId === ownerId) {
+            return res.status(400).json({ message: "Owner is already ownerl cannot be added as member" })
+        }
+
+    } catch (error) {
+        console.error("Error adding new member: ", error.message)
+        return res.status(500).json({ message: "Server Error" })
+    }
+
+}
