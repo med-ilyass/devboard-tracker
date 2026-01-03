@@ -26,6 +26,7 @@ export default function ProjectDetails() {
         status: "backlog"
     });
     const [savingEdit, setSavingEdit] = useState(false)
+    const canWrite = project?.my_role === "owner" || project?.my_role === "editor";
     useEffect(() => {
         if (!token) {
             navigate("/login");
@@ -65,6 +66,7 @@ export default function ProjectDetails() {
     }, [token, navigate, projectId]);
 
     function startEdit(task) {
+        if (!canWrite) return;
         setEditingTaskId(task.id);
         setEditForm({
             title: task.title ?? "",
@@ -170,31 +172,36 @@ export default function ProjectDetails() {
                     />
 
                     {project.description && <p>{project.description}</p>}
-                    {project.description && <p>{project.description}</p>}
                     <small>Status: {project.status}</small>
                     <hr style={{ margin: "1rem 0" }} />
                     <h2>Tasks</h2>
-                    <form className="form" onSubmit={handleCreatetask} >
-                        <div className="field">
-                            <label>Title</label>
-                            <input name="title" required />
-                        </div>
-                        <div className="field">
-                            <label>Description:</label>
-                            <textarea name="description" rows={3} required />
-                        </div>
-                        <div className="field" >
-                            <label>Priority </label>
-                            <select name="priority" defaultValue="medium">
-                                <option value="low">low</option>
-                                <option value="medium">medium</option>
-                                <option value="high">high</option>
-                            </select>
-                        </div>
-                        <button type="submit" disabled={creatingTask}>
-                            {creatingTask ? "Adding..." : "Add Task"}
-                        </button>
-                    </form>
+                    {!canWrite ? (
+                        <p style={{ padding: "10px 12px", background: "#f6f6f6", border: "1px solid #eee", borderRadius: 8 }}>
+                            You are a <strong>{project.my_role}</strong>. You have read-only access and can’t add, edit, or delete tasks.
+                        </p>
+                    ) : (
+                        <form className="form" onSubmit={handleCreatetask}>
+                            <div className="field">
+                                <label>Title</label>
+                                <input name="title" required />
+                            </div>
+                            <div className="field">
+                                <label>Description:</label>
+                                <textarea name="description" rows={3} required />
+                            </div>
+                            <div className="field">
+                                <label>Priority</label>
+                                <select name="priority" defaultValue="medium">
+                                    <option value="low">low</option>
+                                    <option value="medium">medium</option>
+                                    <option value="high">high</option>
+                                </select>
+                            </div>
+                            <button type="submit" disabled={creatingTask}>
+                                {creatingTask ? "Adding..." : "Add Task"}
+                            </button>
+                        </form>
+                    )}
                     <hr style={{ margin: "1rem 0" }} />
                     {tasks.length === 0 ? (<p>No Task yet.</p>) : (
                         <>
@@ -264,15 +271,17 @@ export default function ProjectDetails() {
                                                     Status: {t.status} | Priority: {t.priority}
                                                 </small>
 
-                                                <div>
-                                                    <button type="button" onClick={() => startEdit(t)}>
-                                                        Edit
-                                                    </button>
+                                                {canWrite && (
+                                                    <div>
+                                                        <button type="button" onClick={() => startEdit(t)}>
+                                                            Edit
+                                                        </button>
 
-                                                    <button type="button" onClick={() => handleDeleteTask(t.id)}>
-                                                        Delete
-                                                    </button>
-                                                </div>
+                                                        <button type="button" onClick={() => handleDeleteTask(t.id)}>
+                                                            Delete
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </>
                                         )}
                                     </li>
