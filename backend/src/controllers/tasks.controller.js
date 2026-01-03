@@ -101,7 +101,7 @@ export async function createTask(req, res) {
             status = "backlog",
             priority = "medium",
             assigned_to,
-            due_date
+            due_date,
         } = req.body;
 
         if (!project_id || !title) {
@@ -113,19 +113,24 @@ export async function createTask(req, res) {
             return res.status(400).json({ message: "Invalid project_id" });
         }
 
-        const createdBy = req.user.id;
+        const userId = req.user.id;
+
+        // ✅ permission check (owner OR member)
+        const access = await getProjectAccess(pool, projectId, userId);
+
+        if (!access.exists) {
+            return res.status(404).json({ message: "Project not found" });
+        }
+        if (!access.hasAccess) {
+            return res.status(403).json({ message: "You don’t have access to this project." });
+        }
+        if (!canWrite(access.my_role)) {
+            return res.status(403).json({ message: "You have read-only access. Editors only can add tasks." });
+        }
+
         const assignedTo = assigned_to ? Number(assigned_to) : null;
         if (assigned_to && Number.isNaN(assignedTo)) {
             return res.status(400).json({ message: "Invalid assigned_to" });
-        }
-
-        const ownership = await pool.query(
-            "SELECT id FROM projects WHERE id = $1 AND owner_id = $2",
-            [projectId, req.user.id]
-        );
-
-        if (ownership.rows.length === 0) {
-            return res.status(404).json({ message: "Project not found" });
         }
 
         const insertQuery = `
@@ -141,9 +146,9 @@ export async function createTask(req, res) {
             description || null,
             status,
             priority,
-            createdBy,
+            userId,
             assignedTo,
-            due_date || null
+            due_date || null,
         ]);
 
         return res.status(201).json(result.rows[0]);
