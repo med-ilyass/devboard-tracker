@@ -226,7 +226,6 @@ export default function ProjectDetails() {
                                                         onChange={(e) => setEditForm((p) => ({ ...p, description: e.target.value }))}
                                                     />
                                                 </div>
-
                                                 <div className="field">
                                                     <label>Status</label>
                                                     <select
@@ -250,7 +249,6 @@ export default function ProjectDetails() {
                                                         <option value="high">high</option>
                                                     </select>
                                                 </div>
-
                                                 <button
                                                     type="button"
                                                     disabled={savingEdit}
@@ -309,6 +307,4 @@ export default function ProjectDetails() {
             )}
         </div >
     )
-
-
 }

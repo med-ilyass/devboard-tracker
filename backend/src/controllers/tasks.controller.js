@@ -28,65 +28,92 @@ function canWrite(role) {
     return role === "owner" || role === "editor";
 }
 export async function getTasks(req, res) {
-    // res.json({ message: "Get all task works!" })
     try {
+        const userId = req.user.id;
         const { projectId } = req.query;
-        let result;
+
+        // If projectId is provided: verify access to that project
         if (projectId) {
-            const id = Number(projectId)
-            if (Number.isNaN(id)) {
-                return res.status(400).json({ message: "Invalid project id in query" })
+            const pid = Number(projectId);
+            if (Number.isNaN(pid)) {
+                return res.status(400).json({ message: "Invalid project id in query" });
             }
-            result = await pool.query(`
-                SELECT t.id, t.project_id, t.title, t.description, t.status, t.priority,
-                t.created_by, t.assigned_to, t.due_date, t.created_at, t.updated_at
-                FROM tasks t
-                JOIN projects p ON p.id = t.project_id
-                WHERE t.project_id = $1 AND p.owner_id = $2
-                ORDER BY t.created_at DESC;
-                `, [id, req.user.id])
-        } else {
-            result = await pool.query(
+
+            const access = await getProjectAccess(pool, pid, userId);
+            if (!access.exists) return res.status(404).json({ message: "Project not found" });
+            if (!access.hasAccess) return res.status(403).json({ message: "You don’t have access to this project." });
+
+            const result = await pool.query(
                 `
-        SELECT t.id, t.project_id, t.title, t.description, t.status, t.priority,
-       t.created_by, t.assigned_to, t.due_date, t.created_at, t.updated_at
-        FROM tasks t
-        JOIN projects p ON p.id = t.project_id
-       WHERE p.owner_id = $1
-        ORDER BY t.created_at DESC;
-        `, [req.user.id]
+        SELECT id, project_id, title, description, status, priority,
+               created_by, assigned_to, due_date, created_at, updated_at
+        FROM tasks
+        WHERE project_id = $1
+        ORDER BY created_at DESC
+        `,
+                [pid]
             );
+
+            return res.json(result.rows);
         }
-        res.json(result.rows)
+
+        // If no projectId: return tasks across all projects user can access (owner OR member)
+        const result = await pool.query(
+            `
+      SELECT t.id, t.project_id, t.title, t.description, t.status, t.priority,
+             t.created_by, t.assigned_to, t.due_date, t.created_at, t.updated_at
+      FROM tasks t
+      JOIN projects p ON p.id = t.project_id
+      LEFT JOIN project_members pm
+        ON pm.project_id = p.id AND pm.user_id = $1
+      WHERE p.owner_id = $1 OR pm.user_id = $1
+      ORDER BY t.created_at DESC
+      `,
+            [userId]
+        );
+
+        return res.json(result.rows);
     } catch (err) {
-        console.error("Failed getting all Tasks", err.message);
-        res.status(500).json({ err: "Failing fetshing tasks!" })
+        console.error("Failed getting Tasks", err.message);
+        return res.status(500).json({ message: "Failed fetching tasks" });
     }
 }
 //get tasks by id
 export async function getTaskById(req, res) {
-    // res.json({ message: "Get task by is works" })
     try {
-        const { taskId } = req.params;
-        const id = Number(taskId);
-        if (Number.isNaN(id)) {
-            return res.status(400).json({ message: "Invalid task id" })
-        }
-        const results = await pool.query(`
-            SELECT t.id, t.project_id, t.title, t.description, t.status, t.priority,
-       t.created_by, t.assigned_to, t.due_date, t.created_at, t.updated_at
-       FROM tasks t
-         JOIN projects p ON p.id = t.project_id
-         WHERE t.id = $1 AND p.owner_id = $2;`, [id, req.user.id])
+        const userId = req.user.id;
+        const taskId = Number(req.params.taskId);
 
-        if (results.rows.length === 0) {
-            return res.status(404).json({ message: "Task not found" })
+        if (Number.isNaN(taskId)) {
+            return res.status(400).json({ message: "Invalid task id" });
         }
-        const task = results.rows[0]
-        res.json(task)
+
+        // First get task + its project_id
+        const taskRes = await pool.query(
+            `
+      SELECT id, project_id, title, description, status, priority,
+             created_by, assigned_to, due_date, created_at, updated_at
+      FROM tasks
+      WHERE id = $1
+      `,
+            [taskId]
+        );
+
+        if (taskRes.rows.length === 0) {
+            return res.status(404).json({ message: "Task not found" });
+        }
+
+        const task = taskRes.rows[0];
+
+        // Check access to the project
+        const access = await getProjectAccess(pool, task.project_id, userId);
+        if (!access.exists) return res.status(404).json({ message: "Project not found" });
+        if (!access.hasAccess) return res.status(403).json({ message: "You don’t have access to this project." });
+
+        return res.json(task);
     } catch (error) {
-        console.error("Failed getting task by Id!", error.message)
-        res.status(500).json({ error: "Failing fetshing Task by ID!" })
+        console.error("Failed getting task by Id!", error.message);
+        return res.status(500).json({ message: "Failed fetching Task by ID" });
     }
 }
 //create task
