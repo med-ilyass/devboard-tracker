@@ -78,12 +78,9 @@ export default function ResetPassword() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email }),
             });
-
             let data = null;
             try { data = await res.json(); } catch { }
-
             if (!res.ok) throw new Error(data?.message || "Failed to resend code");
-
             const availableAt = Date.now() + COOLDOWN_SECONDS * 1000;
             localStorage.setItem(storageKey, String(availableAt));
             setSecondLeft(computeSecondsLeft(availableAt));
@@ -92,7 +89,6 @@ export default function ResetPassword() {
             setError("Failed to resend code. try again.")
         }
     }
-
     async function handleSubmit(e) {
         e.preventDefault();
         setError("")
