@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { getProjectById } from "../api/projects.js";
 import { createTask, deleteTask, updateTask, getTasks } from "../api/tasks.js";
+import ShareModal from "../components/ShareModal.jsx";
 
 export default function ProjectDetails() {
     const navigate = useNavigate();
@@ -11,6 +12,7 @@ export default function ProjectDetails() {
     //page state
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("")
+    const [shareOpen, setShareOpen] = useState(false)
     //data state 
     const [project, setProject] = useState(null)
     const [tasks, setTasks] = useState([])
@@ -146,7 +148,28 @@ export default function ProjectDetails() {
             {error && <p style={{ color: "red" }}>{error}</p>}
             {loading ? (<p>Loading ...</p>) : !project ? (<p>Project not found!</p>) : (
                 <>
-                    <h1>{project.name}</h1>
+                    <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                        <h1 style={{ margin: 0 }}>{project.name}</h1>
+
+                        {project.my_role === "owner" && (
+                            <button type="button" onClick={() => setShareOpen(true)}>
+                                Share
+                            </button>
+                        )}
+                    </div>
+
+                    <small>
+                        Status: {project.status} | My role: {project.my_role}
+                    </small>
+
+                    <ShareModal
+                        open={shareOpen}
+                        onClose={() => setShareOpen(false)}
+                        token={token}
+                        projectId={projectId}
+                    />
+
+                    {project.description && <p>{project.description}</p>}
                     {project.description && <p>{project.description}</p>}
                     <small>Status: {project.status}</small>
                     <hr style={{ margin: "1rem 0" }} />
