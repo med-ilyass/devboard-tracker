@@ -1,5 +1,32 @@
 import pool from "../config/db.js";
 //get all tasks
+async function getProjectAccess(pool, projectId, userId) {
+    const result = await pool.query(`
+        SELECT
+        p.id,
+        p.owner_id,
+      CASE
+        WHEN p.owner_id = $2 THEN 'owner'
+        ELSE pm.role::text
+      END AS my_role
+    FROM projects p
+    LEFT JOIN project_members pm
+      ON pm.project_id = p.id AND pm.user_id = $2
+    WHERE p.id = $1
+    LIMIT 1
+        `, [projectId, userId]);
+
+    if (result.rows.length === 0) {
+        return { exists: false, my_role: null }
+    }
+    const row = result.rows[0];
+    //adding statement if not owner and no membership role => no access
+    const hasAccess = row.my_role === "owner" || row.my_role === "viewer" || row.my_role === "editor"
+    return { exists: true, hasAccess, my_role: row.my_role }
+}
+function canWrite(role) {
+    return role === "owner" || role === "editor";
+}
 export async function getTasks(req, res) {
     // res.json({ message: "Get all task works!" })
     try {
@@ -186,15 +213,15 @@ export async function updateTask(req, res) {
 }
 // DELETE /api/tasks/:taskId
 export async function deleteTask(req, res) {
-  try {
-    const { taskId } = req.params;
-    const id = Number(taskId);
+    try {
+        const { taskId } = req.params;
+        const id = Number(taskId);
 
-    if (Number.isNaN(id)) {
-      return res.status(400).json({ message: "Invalid task id" });
-    }
+        if (Number.isNaN(id)) {
+            return res.status(400).json({ message: "Invalid task id" });
+        }
 
-    const query = `
+        const query = `
       DELETE FROM tasks t
       USING projects p
       WHERE t.id = $1
@@ -204,16 +231,17 @@ export async function deleteTask(req, res) {
                 t.created_by, t.assigned_to, t.due_date, t.created_at, t.updated_at
     `;
 
-    const result = await pool.query(query, [id, req.user.id]);
+        const result = await pool.query(query, [id, req.user.id]);
 
-    if (result.rows.length === 0) {
-      // not found OR not yours
-      return res.status(404).json({ message: "Task not found" });
+        if (result.rows.length === 0) {
+            // not found OR not yours
+            return res.status(404).json({ message: "Task not found" });
+        }
+
+        return res.json({ message: "Task deleted", task: result.rows[0] });
+    } catch (error) {
+        console.error("Error in deleteTask:", error.message);
+        return res.status(500).json({ message: "Failed to delete task" });
     }
-
-    return res.json({ message: "Task deleted", task: result.rows[0] });
-  } catch (error) {
-    console.error("Error in deleteTask:", error.message);
-    return res.status(500).json({ message: "Failed to delete task" });
-  }
 }
+
