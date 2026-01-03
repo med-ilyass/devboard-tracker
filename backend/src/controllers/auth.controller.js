@@ -2,6 +2,7 @@ import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 import pool from "../config/db.js"
 import crypto from "node:crypto";
+import { sendEmail } from "../config/email.js";
 
 const COOLDOWN_SECONDS = 60;
 const OTP_EXPIRES_MINUTES = 10; //code expiry
@@ -103,6 +104,8 @@ export async function getMe(req, res) {
     }
 }
 export async function forgotPassword(req, res) {
+    console.log("🔥 forgotPassword hit", req.body);
+
     try {
         const { email } = req.body
         if (!email) return res.status(400).json({ message: "Email is required." })
@@ -129,7 +132,7 @@ export async function forgotPassword(req, res) {
                 });
             }
         }
-        // Generate 6-digit numeric code
+        // Generate 8-digit numeric code
         function generateResetCode(length = 8) {
             const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             const bytes = crypto.randomBytes(length);
@@ -154,6 +157,21 @@ export async function forgotPassword(req, res) {
         );
         // For dev only: log the code (later: send via email)
         console.log("🔐 PASSWORD RESET CODE for", email, ":", code);
+        await sendEmail({
+            to: email,
+            subject: "Devboard password reset code",
+            html: `
+            <div style="font-family: Arial, sans-serif; line-height: 1.5;">
+                <h2>Password reset</h2>
+                <p>Use this code to reset your password:</p>
+                <div style="font-size: 28px; font-weight: 700; letter-spacing: 6px; padding: 12px 0;">
+                ${code}
+                </div>
+                <p>This code expires in ${OTP_EXPIRES_MINUTES} minutes.</p>
+                <p>If you didn’t request this, you can ignore this email.</p>
+            </div>
+  `,
+        });
         return res.status(200).json(genericResponce);
     } catch (error) {
         console.error("Error in forgotPassword:", error.message);

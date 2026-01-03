@@ -10,19 +10,35 @@ export default function ForgotPassword() {
 
     async function handleSubmit(e) {
         e.preventDefault();
-        setLoading(true)
+        setLoading(true);
         setError("");
         setMessage("");
 
-        const form = new FormData(e.target)
-        const email = form.get("email")
+        const form = new FormData(e.target);
+        const email = form.get("email");
 
-        //let's connect ot back-end
+        try {
+            const res = await fetch("http://localhost:4000/api/auth/forgot-password", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email }),
+            });
 
-        setMessage("If email exists, we sent a code.")
-        setLoading(false)
-        //let's pass the email to the next page using query params:
-        navigate(`/reset-password?email${encodeURIComponent(email)}`)
+            // always show generic message
+            if (!res.ok) {
+                // optional: read backend message
+                let data = null;
+                try { data = await res.json(); } catch { }
+                throw new Error(data?.message || "Request failed");
+            }
+
+            setMessage("If the email exists, we sent a code.");
+            navigate(`/reset-password?email=${encodeURIComponent(email)}`);
+        } catch (err) {
+            setError(err.message || "Network error");
+        } finally {
+            setLoading(false);
+        }
     }
 
 
