@@ -208,7 +208,7 @@ export default function ProjectDetails() {
                             <ul>
                                 {tasks.map((t) => (
                                     <li key={t.id} style={{ marginTop: "1rem" }}>
-                                        {editingTaskId === t.id ? (
+                                        {canWrite && editingTaskId === t.id ? (
                                             <>
                                                 <div className="field">
                                                     <label>Title</label>
@@ -265,7 +265,23 @@ export default function ProjectDetails() {
                                             </>
                                         ) : (
                                             <>
-                                                <strong>{t.title}</strong>
+                                                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                                    <strong>{t.title}</strong>
+
+                                                    {!canWrite && (
+                                                        <span
+                                                            style={{
+                                                                padding: "2px 8px",
+                                                                borderRadius: 999,
+                                                                fontSize: 12,
+                                                                border: "1px solid #ddd",
+                                                                background: "#f6f6f6",
+                                                            }}
+                                                        >
+                                                            Read-only
+                                                        </span>
+                                                    )}
+                                                </div>
                                                 {t.description && <div>{t.description}</div>}
                                                 <small>
                                                     Status: {t.status} | Priority: {t.priority}
