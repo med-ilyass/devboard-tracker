@@ -176,22 +176,49 @@ export async function updateTask(req, res) {
             return res.status(400).json({ message: "Invalid assigned_to" });
         }
 
+        // 1) Find task -> get its project_id
+        const taskRes = await pool.query(
+            `SELECT id, project_id FROM tasks WHERE id = $1`,
+            [id]
+        );
+
+        if (taskRes.rows.length === 0) {
+            return res.status(404).json({ message: "Task not found" });
+        }
+
+        const projectId = taskRes.rows[0].project_id;
+        const userId = req.user.id;
+
+        // 2) Check access to the project (owner/member)
+        const access = await getProjectAccess(pool, projectId, userId);
+
+        if (!access.exists) {
+            // project deleted or inconsistent data
+            return res.status(404).json({ message: "Project not found" });
+        }
+
+        if (!access.hasAccess) {
+            return res.status(403).json({ message: "You don’t have access to this project." });
+        }
+
+        if (!canWrite(access.my_role)) {
+            return res.status(403).json({ message: "You have read-only access. Editors only can edit tasks." });
+        }
+
+        // 3) Update task
         const updateQuery = `
-      UPDATE tasks t
+      UPDATE tasks
       SET
-        title = COALESCE($1, t.title),
-        description = COALESCE($2, t.description),
-        status = COALESCE($3, t.status),
-        priority = COALESCE($4, t.priority),
-        assigned_to = COALESCE($5, t.assigned_to),
-        due_date = COALESCE($6, t.due_date),
+        title = COALESCE($1, title),
+        description = COALESCE($2, description),
+        status = COALESCE($3, status),
+        priority = COALESCE($4, priority),
+        assigned_to = COALESCE($5, assigned_to),
+        due_date = COALESCE($6, due_date),
         updated_at = NOW()
-      FROM projects p
-      WHERE t.id = $7
-        AND p.id = t.project_id
-        AND p.owner_id = $8
-      RETURNING t.id, t.project_id, t.title, t.description, t.status, t.priority,
-                t.created_by, t.assigned_to, t.due_date, t.created_at, t.updated_at
+      WHERE id = $7
+      RETURNING id, project_id, title, description, status, priority,
+                created_by, assigned_to, due_date, created_at, updated_at
     `;
 
         const result = await pool.query(updateQuery, [
@@ -202,13 +229,7 @@ export async function updateTask(req, res) {
             assignedTo,
             due_date ?? null,
             id,
-            req.user.id
         ]);
-
-        if (result.rows.length === 0) {
-            // not found OR not yours
-            return res.status(404).json({ message: "Task not found" });
-        }
 
         return res.json(result.rows[0]);
     } catch (error) {
@@ -226,22 +247,43 @@ export async function deleteTask(req, res) {
             return res.status(400).json({ message: "Invalid task id" });
         }
 
-        const query = `
-      DELETE FROM tasks t
-      USING projects p
-      WHERE t.id = $1
-        AND p.id = t.project_id
-        AND p.owner_id = $2
-      RETURNING t.id, t.project_id, t.title, t.description, t.status, t.priority,
-                t.created_by, t.assigned_to, t.due_date, t.created_at, t.updated_at
-    `;
+        // 1) Find task -> get project_id
+        const taskRes = await pool.query(
+            `SELECT id, project_id FROM tasks WHERE id = $1`,
+            [id]
+        );
 
-        const result = await pool.query(query, [id, req.user.id]);
-
-        if (result.rows.length === 0) {
-            // not found OR not yours
+        if (taskRes.rows.length === 0) {
             return res.status(404).json({ message: "Task not found" });
         }
+
+        const projectId = taskRes.rows[0].project_id;
+        const userId = req.user.id;
+
+        // 2) Check access to the project
+        const access = await getProjectAccess(pool, projectId, userId);
+
+        if (!access.exists) {
+            return res.status(404).json({ message: "Project not found" });
+        }
+
+        if (!access.hasAccess) {
+            return res.status(403).json({ message: "You don’t have access to this project." });
+        }
+
+        if (!canWrite(access.my_role)) {
+            return res.status(403).json({ message: "You have read-only access. Editors only can delete tasks." });
+        }
+
+        // 3) Delete task
+        const query = `
+      DELETE FROM tasks
+      WHERE id = $1
+      RETURNING id, project_id, title, description, status, priority,
+                created_by, assigned_to, due_date, created_at, updated_at
+    `;
+
+        const result = await pool.query(query, [id]);
 
         return res.json({ message: "Task deleted", task: result.rows[0] });
     } catch (error) {
