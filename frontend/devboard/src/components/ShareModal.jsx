@@ -3,11 +3,11 @@ import { addMembers, listMembers, removeMember } from "../api/projectMembers";
 
 export default function ShareModal({ open, onClose, token, projectId }) {
     const [loading, setloading] = useState(false);
-    const [error, setError] = useState(false);
+    const [error, setError] = useState("");
     const [members, setMembers] = useState([]);
 
     const [email, setEmail] = useState("");
-    const [role, setRole] = useState("");
+    const [role, setRole] = useState("viewer");
     const [adding, setAdding] = useState(false);
 
     useEffect(() => {
@@ -20,9 +20,9 @@ export default function ShareModal({ open, onClose, token, projectId }) {
                 const data = await listMembers(token, projectId)
                 setMembers(data)
             } catch (error) {
-                setEmail(error.message)
+                setError(error.message);
             } finally {
-                setloading(true)
+                setloading(false)
             }
         }
         load();
@@ -39,7 +39,7 @@ export default function ShareModal({ open, onClose, token, projectId }) {
             setMembers((prev) => {
                 const exists = prev.some((m) => m.user_id === added.user_id);
                 if (exists) {
-                    return prev.map((m) => (m.user_id === added.user_id ? { ...m, role: added.roleƒ } : m))
+                    return prev.map((m) => (m.user_id === added.user_id ? { ...m, role: added.role } : m))
                 }
                 return [added, ...prev]
             })
@@ -131,6 +131,7 @@ const styles = {
         background: "#fff",
         borderRadius: 12,
         padding: 16,
+        color: "#111", // 👈 THIS FIXES EVERYTHING INSIDE
     },
     header: {
         display: "flex",
