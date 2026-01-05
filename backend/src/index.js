@@ -23,6 +23,10 @@ app.use("/api/projects", projectsRoutes)
 app.use("/api/tasks", tasksRoutes)
 app.use("/api/contact", contactRoutes);
 
+app.post("/api/contact", (req, res) => {
+  res.json({ message: "contact route works" });
+});
+
 app.listen(PORT, () => {
     console.log(`server running on port ${PORT}`)
 }) 
