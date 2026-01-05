@@ -11,6 +11,7 @@ import ResetPassword from './pages/ResetPassword.jsx'
 import ForgotPassword from './pages/ForgotPassword.jsx'
 import { Routes, Route } from "react-router-dom"
 import RequiredAuth from './components/RequiredAuth.jsx'
+import Contact from './pages/Contact.jsx'
 
 function App() {
 
@@ -39,9 +40,10 @@ function App() {
       <Route element={<Layout user={user} setUser={setUser} setToken={setToken} />}>
         <Route path="/" element={<Home />} />
         <Route path='/login' element={<Login onLogin={handleLogin} />} />
-        <Route path='/register' element={<Register onLogin={handleLogin}/>} />
+        <Route path='/register' element={<Register onLogin={handleLogin} />} />
         <Route path='/forgot-password' element={<ForgotPassword />} />
         <Route path='/reset-password' element={<ResetPassword />} />
+        <Route path='/contact' element={<Contact />} />
         {/* Protected */}
         <Route element={<RequiredAuth />}>
           <Route path="/projects" element={<Project />} />

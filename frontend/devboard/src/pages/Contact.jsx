@@ -33,34 +33,34 @@ export default function Contact() {
         }
 
     }
+    return (
+        <div className="page">
+            <h1>Contact</h1>
+            <p style={{ opacity: 0.8 }}>Send us a message and we'll replay by email.</p>
+            {error && <p style={{ color: "red" }}>{error}</p>}
+            {ok && <p style={{ color: "green" }}>{ok}</p>}
+            <form className="form" onSubmit={handleSubmit}>
+                <div className="field">
+                    <label>Name</label>
+                    <input name="name" required />
+                </div>
+                <div className="field">
+                    <label>Email</label>
+                    <input type="email" name="email" />
+                </div>
+                <div className="field">
+                    <label>Subject</label>
+                    <input name="subject" required />
+                </div>
+                <div className="field">
+                    <label>Message</label>
+                    <textarea name="message" rows={5} required />
+                </div>
+                <button type="submit" disabled={loading}>
+                    {loading ? "Sending ..." : "Send"}
+                </button>
+            </form>
+        </div>
+    )
 }
 
-return (
-    <div className="page">
-        <h1>Contact</h1>
-        <p style={{ opacity: 0.8 }}>Send us a message and we'll replay by email.</p>
-        {error && <p style={{ color: "red" }}>{error}</p>}
-        {ok && <p style={{ color: "green" }}>{ok}</p>}
-        <form className="form" onSubmit={handleSubmit}>
-            <div className="field">
-                <label>Name</label>
-                <input name="name" required />
-            </div>
-            <div className="field">
-                <label>Email</label>
-                <input type="email" name="email" />
-            </div>
-            <div className="field">
-                <label>Subject</label>
-                <input name="subject" required />
-            </div>
-            <div className="field">
-                <label>Message</label>
-                <textarea name="message" rows={5} required />
-            </div>
-            <button type="submit" disabled={loading}>
-                {loading ? "Sending ..." : "Send"}
-            </button>
-        </form>
-    </div>
-)
