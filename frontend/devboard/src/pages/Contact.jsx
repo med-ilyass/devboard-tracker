@@ -22,7 +22,7 @@ export default function Contact() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ name, email, subject, message })
             })
-            const data = res.json().catch(() => null);
+            const data = await res.json().catch(() => null);
             if (!res.ok) throw new Error(data?.message || "Failed ro send message")
             setOk("Message sent! We'll get back to you soon.");
             e.target.reset();
@@ -36,7 +36,7 @@ export default function Contact() {
     return (
         <div className="page">
             <h1>Contact</h1>
-            <p style={{ opacity: 0.8 }}>Send us a message and we'll replay by email.</p>
+            <p style={{ opacity: 0.8 }}>Send us a message and we'll reply by email.</p>
             {error && <p style={{ color: "red" }}>{error}</p>}
             {ok && <p style={{ color: "green" }}>{ok}</p>}
             <form className="form" onSubmit={handleSubmit}>
@@ -46,7 +46,7 @@ export default function Contact() {
                 </div>
                 <div className="field">
                     <label>Email</label>
-                    <input type="email" name="email" />
+                    <input type="email" name="email" required/>
                 </div>
                 <div className="field">
                     <label>Subject</label>
