@@ -5,7 +5,7 @@
     --text: rgba(255, 255, 255, .92);
     --muted: rgba(255, 255, 255, .68);
     --border: rgba(255, 255, 255, .14);
-
+    --nav-h: 64px;
     --brand: #7c3aed;
     /* purple */
     --brand-2: #22c55e;
@@ -467,13 +467,11 @@ p {
 }
 
 /* NAVBAR */
-.navbar {
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    background: rgba(10, 12, 16, 0.72);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+.navbar{
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--nav-h);
+  z-index: 9999;
 }
 
 .navbar-inner {
@@ -581,10 +579,11 @@ p {
     color: rgba(255, 255, 255, 0.92);
 }
 
-.main {
-    flex: 1;
-    width: 100%;
-    display: flex;
+.main{
+  flex: 1;
+  width: 100%;
+  display: block;              /* important */
+  padding-top: calc(var(--nav-h) + 18px);
 }
 
 /* optional max-width wrapper used by footer */
@@ -1423,4 +1422,13 @@ p {
 .page li .field textarea,
 .page li .field select {
     background: rgba(255, 255, 255, 0.05);
+}
+
+.app-shell > .main{
+  padding-top: calc(var(--nav-h) + 24px) !important;
+}
+
+/* ProjectDetails (and any page) not hiding behind fixed navbar */
+.page{
+  padding-top: calc(var(--nav-h, 64px) + 18px);
 }
