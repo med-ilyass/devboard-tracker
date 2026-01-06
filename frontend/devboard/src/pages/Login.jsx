@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Snowfall from "react-snowfall"
 
@@ -6,6 +6,13 @@ export default function Login({ onLogin }) {
 
     const [error, setError] = useState("");
     const navigate = useNavigate();
+    const token = localStorage.getItem("devboard_token");
+
+    useEffect(() => {
+        if (token) {
+            navigate("/projects")
+        }
+    }, [token, navigate])
 
     async function handleSubmit(e) {
         e.preventDefault();
@@ -40,6 +47,11 @@ export default function Login({ onLogin }) {
         }
     }
 
+    if (token) {
+        return (<div className="page">
+            <p>You're already logged in. Redirecting...</p>
+        </div>)
+    }
     return (
         <div className="page">
             <h1>Login</h1>
