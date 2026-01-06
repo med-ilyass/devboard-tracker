@@ -140,4 +140,4 @@ This project is licensed under the MIT License.
 👋 Author
 
 Built by ILYASS OUDLI
-Full-stack developer | QA Engineer | Software Enthusiast
+Full-stack developer | QA Engineer | Software Enginner
