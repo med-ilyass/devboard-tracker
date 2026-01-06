@@ -10,6 +10,7 @@ export default function Navbar({ user, token, onLogout }) {
       </div>
 
       <div className="navbar-right">
+        <Link to="/contact">Contact</Link>
         {token ? (
           <>
             <Link to="/projects">Projects</Link>
