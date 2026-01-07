@@ -467,11 +467,13 @@ p {
 }
 
 /* NAVBAR */
-.navbar{
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  height: var(--nav-h);
-  z-index: 9999;
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--nav-h);
+    z-index: 9999;
 }
 
 .navbar-inner {
@@ -579,11 +581,12 @@ p {
     color: rgba(255, 255, 255, 0.92);
 }
 
-.main{
-  flex: 1;
-  width: 100%;
-  display: block;              /* important */
-  padding-top: calc(var(--nav-h) + 18px);
+.main {
+    flex: 1;
+    width: 100%;
+    display: block;
+    /* important */
+    padding-top: calc(var(--nav-h) + 18px);
 }
 
 /* optional max-width wrapper used by footer */
@@ -1424,11 +1427,33 @@ p {
     background: rgba(255, 255, 255, 0.05);
 }
 
-.app-shell > .main{
-  padding-top: calc(var(--nav-h) + 24px) !important;
+.app-shell>.main {
+    padding-top: calc(var(--nav-h) + 24px) !important;
 }
 
 /* ProjectDetails (and any page) not hiding behind fixed navbar */
-.page{
-  padding-top: calc(var(--nav-h, 64px) + 18px);
+.page {
+    padding-top: calc(var(--nav-h, 64px) + 18px);
+}
+
+/* FOOTER SOCIALS */
+.footer-left,
+.footer-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.footer-right a {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    padding: 6px 8px;
+    border-radius: 8px;
+    transition: color 0.15s ease, background 0.15s ease;
+}
+
+.footer-right a:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.06);
 }

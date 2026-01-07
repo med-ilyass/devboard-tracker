@@ -1,5 +1,6 @@
 import { Outlet, useNavigate } from "react-router-dom";
 import Navbar from "./Navbar.jsx";
+import Footer from "./Footer.jsx";
 
 export default function Layout({ user, setUser, setToken }) {
   const navigate = useNavigate();
@@ -21,13 +22,7 @@ export default function Layout({ user, setUser, setToken }) {
         <Outlet />
       </main>
 
-      <footer className="footer">
-        <div className="container footer-inner">
-          <span>© {new Date().getFullYear()} Devboard</span>
-          <span className="footer-dot">•</span>
-          <span>Built with React + Node + Postgres</span>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
