@@ -3,11 +3,11 @@ services:
     image: postgres:16-alpine
     container_name: devboard_db
     environment:
-      POSTGRES_USER: devboard
-      POSTGRES_PASSWORD: devboard
+      POSTGRES_USER: ilyassoudli
+      POSTGRES_PASSWORD: ilyass
       POSTGRES_DB: devboard
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - devboard_db_data:/var/lib/postgresql/data
 
@@ -29,7 +29,9 @@ services:
       - db
 
   frontend:
-    build: ./frontend/devboard
+    build: 
+      context: ./frontend/devboard
+      dockerfile: ../Dockerfile
     container_name: devboard_frontend
     ports:
       - "5173:5173"
