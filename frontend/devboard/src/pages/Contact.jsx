@@ -2,6 +2,7 @@ import { useState } from "react";
 
 
 export default function Contact() {
+    const API_URL = import.meta.env.VITE_API_URL || "";
     const [error, setError] = useState();
     const [loading, setLoading] = useState(false);
     const [ok, setOk] = useState("");
@@ -17,7 +18,7 @@ export default function Contact() {
         const subject = form.get("subject");
         const message = form.get("message");
         try {
-            const res = await fetch(`http://localhost:4000/api/contact`, {
+            const res = await fetch(`${API_URL}/api/contact`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ name, email, subject, message })
@@ -46,7 +47,7 @@ export default function Contact() {
                 </div>
                 <div className="field">
                     <label>Email</label>
-                    <input type="email" name="email" required/>
+                    <input type="email" name="email" required />
                 </div>
                 <div className="field">
                     <label>Subject</label>
