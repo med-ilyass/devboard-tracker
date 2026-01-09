@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 
 export default function Home() {
+  const token = localStorage.getItem("devboard_token")
   return (
     <div className="home">
       <section className="hero container">
@@ -21,12 +22,20 @@ export default function Home() {
           </p>
 
           <div className="hero-actions">
-            <Link to="/register" className="btn btn-primary">
-              Get started
-            </Link>
-            <Link to="/login" className="btn btn-ghost">
-              Log in
-            </Link>
+            {token ? (
+              <Link to="/projects" className="btn btn-primary">
+                Go to projects
+              </Link>
+            ) : (
+              <>
+                <Link to="/register" className="btn btn-primary">
+                  Get started
+                </Link>
+                <Link to="/login" className="btn btn-ghost">
+                  Log in
+                </Link>
+              </>
+            )}
           </div>
 
           <div className="hero-stats">
