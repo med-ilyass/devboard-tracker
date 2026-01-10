@@ -1,6 +1,6 @@
 import { Router } from "express"
 import authMiddleware from "../middleware/auth.js";
-import searchUsers from "../controllers/users.controller.js"
+import {searchUsers} from "../controllers/users.controller.js"
 const router = Router();
 
 router.use(authMiddleware);
