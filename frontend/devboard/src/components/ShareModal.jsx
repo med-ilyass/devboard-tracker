@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { addMembers, listMembers, removeMember } from "../api/projectMembers";
+import { addMembers, listMembers, removeMember } from "../api/projectMembers.js";
 
 export default function ShareModal({ open, onClose, token, projectId }) {
     const [loading, setloading] = useState(false);
