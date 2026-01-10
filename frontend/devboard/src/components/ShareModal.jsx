@@ -179,10 +179,11 @@ export default function ShareModal({ open, onClose, token, projectId }) {
                             placeholder="Invite user by email"
                             value={email}
                             onChange={(e) => {
-                                setEmail(e.target.value);
-                                setShowSug(true);
+                                const val = e.target.value;
+                                setEmail(val);
+                                setShowSug(val.trim().length >= 2);
                             }}
-                            onFocus={() => setShowSug(true)}
+                            onFocus={() => setShowSug(email.trim().length >= 2)}
                             onBlur={() => {
                                 // delay so click can register
                                 setTimeout(() => setShowSug(false), 120);
@@ -217,6 +218,19 @@ export default function ShareModal({ open, onClose, token, projectId }) {
                                     ))}
                             </div>
                         )}
+                        {showSug && (loadingSug || suggestions.length > 0) && (
+                            <div style={styles.kbdHint}>
+                                <span style={styles.kbdKey}>↑</span>
+                                <span style={styles.kbdKey}>↓</span>
+                                <span style={styles.kbdText}>navigate</span>
+                                <span style={styles.kbdDot}>•</span>
+                                <span style={styles.kbdKey}>Enter</span>
+                                <span style={styles.kbdText}>select</span>
+                                <span style={styles.kbdDot}>•</span>
+                                <span style={styles.kbdKey}>Esc</span>
+                                <span style={styles.kbdText}>close</span>
+                            </div>
+                        )}
                     </div>
 
                     <select
@@ -248,7 +262,18 @@ export default function ShareModal({ open, onClose, token, projectId }) {
                                     <div style={{ fontSize: 13, opacity: 0.8 }}>{m.email}</div>
                                 </div>
                                 <div style={styles.right}>
-                                    <span style={styles.badge}>{m.role}</span>
+                                    <span
+                                        style={{
+                                            ...styles.badgeBase,
+                                            ...(m.role === "owner"
+                                                ? styles.badgeOwner
+                                                : m.role === "editor"
+                                                    ? styles.badgeEditor
+                                                    : styles.badgeViewer),
+                                        }}
+                                    >
+                                        {m.role}
+                                    </span>
                                     <button
                                         type="button"
                                         onClick={() => handleRemove(m.user_id)}
@@ -276,6 +301,28 @@ function useDebouncedValue(value, delayMs) {
 }
 
 const styles = {
+    kbdHint: {
+        marginTop: 6,
+        display: "flex",
+        alignItems: "center",
+        gap: 6,
+        flexWrap: "wrap",
+        fontSize: 12,
+        color: "#444",
+    },
+    kbdKey: {
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "2px 7px",
+        borderRadius: 8,
+        border: "1px solid #d5d5d5",
+        background: "#fafafa",
+        fontWeight: 700,
+        color: "#111",
+    },
+    kbdText: { color: "#444" },
+    kbdDot: { color: "#888" },
     backdrop: {
         position: "fixed",
         inset: 0,
@@ -289,9 +336,10 @@ const styles = {
     modal: {
         width: "min(720px, 100%)",
         background: "#fff",
-        borderRadius: 12,
-        padding: 16,
+        borderRadius: 14,
+        padding: 18,
         color: "#000",
+        boxShadow: "0 22px 70px rgba(0,0,0,0.25)",
     },
     header: {
         display: "flex",
@@ -322,10 +370,10 @@ const styles = {
         left: 0,
         right: 0,
         background: "#fff",
-        border: "1px solid #ccc",
-        borderRadius: 10,
+        border: "1px solid #e5e5e5",
+        borderRadius: 12,
         overflow: "hidden",
-        boxShadow: "0 18px 40px rgba(0,0,0,0.18)",
+        boxShadow: "0 18px 50px rgba(0,0,0,0.16)",
         zIndex: 5,
     },
 
@@ -334,13 +382,13 @@ const styles = {
         textAlign: "left",
         border: "none",
         background: "transparent",
-        padding: "10px 10px",
+        padding: "10px 12px",
         cursor: "pointer",
-        color: "#000",          // ✅
+        color: "#000",
     },
 
     dropItemActive: {
-        background: "#f2f2f2",
+        background: "#f3f4f6",
     },
 
     dropItemMuted: {
@@ -391,16 +439,47 @@ const styles = {
         background: "#fff",
         color: "#c00",
     },
-    list: { listStyle: "none", padding: 0, margin: 0 },
+    list: { listStyle: "none", padding: 0, margin: 0, },
     listItem: {
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        padding: "10px 0",
-        borderBottom: "1px solid #e5e5e5",
+        padding: "12px 14px",
+        borderRadius: 10,
+        background: "#f7f7f7",          // ✅ soft background
+        border: "1px solid #e5e5e5",
+        marginBottom: 8,
         gap: 12,
-        color: "#000",          // ✅ ensure black
+        color: "#000",
+    },
+    listItemHover: {
+        background: "#f0f0f0",
     },
     right: { display: "flex", alignItems: "center", gap: 10 },
     badge: { padding: "4px 8px", borderRadius: 999, background: "#eaeaea", fontSize: 12 },
+    badgeBase: {
+        padding: "4px 10px",
+        borderRadius: 999,
+        fontSize: 12,
+        fontWeight: 600,
+        textTransform: "capitalize",
+    },
+
+    badgeOwner: {
+        background: "rgba(124, 58, 237, 0.15)",
+        color: "#5b21b6",
+        border: "1px solid rgba(124, 58, 237, 0.35)",
+    },
+
+    badgeEditor: {
+        background: "rgba(37, 99, 235, 0.15)",
+        color: "#1e40af",
+        border: "1px solid rgba(37, 99, 235, 0.35)",
+    },
+
+    badgeViewer: {
+        background: "#e5e5e5",
+        color: "#333",
+        border: "1px solid #ccc",
+    },
 };
