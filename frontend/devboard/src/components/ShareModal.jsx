@@ -291,7 +291,7 @@ const styles = {
         background: "#fff",
         borderRadius: 12,
         padding: 16,
-        color: "#111",
+        color: "#000",
     },
     header: {
         display: "flex",
@@ -322,12 +322,13 @@ const styles = {
         left: 0,
         right: 0,
         background: "#fff",
-        border: "1px solid #ddd",
+        border: "1px solid #ccc",
         borderRadius: 10,
         overflow: "hidden",
         boxShadow: "0 18px 40px rgba(0,0,0,0.18)",
         zIndex: 5,
     },
+
     dropItem: {
         width: "100%",
         textAlign: "left",
@@ -335,25 +336,53 @@ const styles = {
         background: "transparent",
         padding: "10px 10px",
         cursor: "pointer",
+        color: "#000",          // ✅
     },
-    dropItemActive: { background: "#f4f4f4" },
-    dropItemMuted: { padding: "10px 10px", fontSize: 13, opacity: 0.7 },
-    dropEmail: { fontWeight: 700, fontSize: 13 },
-    dropName: { fontSize: 12, opacity: 0.75, marginTop: 2 },
+
+    dropItemActive: {
+        background: "#f2f2f2",
+    },
+
+    dropItemMuted: {
+        padding: "10px 10px",
+        fontSize: 13,
+        color: "#555",
+    },
+
+    dropEmail: {
+        fontWeight: 700,
+        fontSize: 13,
+        color: "#000",
+    },
+
+    dropName: {
+        fontSize: 12,
+        color: "#444",
+        marginTop: 2,
+    },
 
     input: {
         width: "100%",
         padding: 10,
         borderRadius: 8,
         border: "1px solid #ddd",
+        color: "#000",
+        background: "#fff",
     },
-    select: { padding: 10, borderRadius: 8, border: "1px solid #ddd" },
+    select: {
+        padding: 10,
+        borderRadius: 8,
+        border: "1px solid #ddd",
+        color: "#000",
+        background: "#fff",
+    },
     primaryBtn: {
         padding: "10px 14px",
         borderRadius: 8,
-        border: "1px solid #222",
-        background: "#222",
+        border: "1px solid #000",
+        background: "#000",
         color: "#fff",
+        cursor: "pointer",
     },
     dangerBtn: {
         padding: "8px 10px",
@@ -368,9 +397,10 @@ const styles = {
         justifyContent: "space-between",
         alignItems: "center",
         padding: "10px 0",
-        borderBottom: "1px solid #eee",
+        borderBottom: "1px solid #e5e5e5",
         gap: 12,
+        color: "#000",          // ✅ ensure black
     },
     right: { display: "flex", alignItems: "center", gap: 10 },
-    badge: { padding: "4px 8px", borderRadius: 999, background: "#f2f2f2", fontSize: 12 },
+    badge: { padding: "4px 8px", borderRadius: 999, background: "#eaeaea", fontSize: 12 },
 };
