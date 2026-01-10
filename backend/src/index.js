@@ -23,7 +23,7 @@ app.use("/api/auth", authRoutes)
 app.use("/api/projects", projectsRoutes)
 app.use("/api/tasks", tasksRoutes)
 app.use("/api/contact", contactRoutes);
-app, use("/api/users", usersRouter)
+app.use("/api/users", usersRouter)
 
 app.post("/api/contact", (req, res) => {
   res.json({ message: "contact route works" });
