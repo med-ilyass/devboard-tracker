@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { addMembers, listMembers, removeMember } from "../api/projectMembers.js";
+import { searchUsersByEmail } from "../api/users.js";
 
 export default function ShareModal({ open, onClose, token, projectId }) {
     const [loading, setloading] = useState(false);
@@ -9,6 +10,15 @@ export default function ShareModal({ open, onClose, token, projectId }) {
     const [email, setEmail] = useState("");
     const [role, setRole] = useState("viewer");
     const [adding, setAdding] = useState(false);
+
+    //autocomplete state
+    const [suggestions, setSuggestions] = useState([]);
+    const [loadingSug, setLoadingSug] = useState(false);
+    const [activeIndex, setActiveIndex] = useState(-1);
+    const [showSug, setShowSug] = useState(false);
+
+    const debouncedEmail = useDebouncedValue(email, 250);
+    const inputRef = useRef(null);
 
     useEffect(() => {
         if (!open) return;
