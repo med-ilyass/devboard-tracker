@@ -5,6 +5,7 @@ import authRoutes from "./routes/auth.routes.js"
 import projectsRoutes from "./routes/projects.routes.js"
 import tasksRoutes from "./routes/tasks.routes.js"
 import contactRoutes from "./routes/contact.routes.js";
+import usersRouter from "./routes/users.routes.js"
 
 
 
@@ -16,17 +17,18 @@ app.use(express.json())
 
 //to test route
 app.get("/", (req, res) => {
-    res.json({ message: "Backend is running" });
+  res.json({ message: "Backend is running" });
 })
 app.use("/api/auth", authRoutes)
 app.use("/api/projects", projectsRoutes)
 app.use("/api/tasks", tasksRoutes)
 app.use("/api/contact", contactRoutes);
+app, use("/api/users", usersRouter)
 
 app.post("/api/contact", (req, res) => {
   res.json({ message: "contact route works" });
 });
 
 app.listen(PORT, () => {
-    console.log(`server running on port ${PORT}`)
+  console.log(`server running on port ${PORT}`)
 }) 
