@@ -29,6 +29,10 @@ app.post("/api/contact", (req, res) => {
   res.json({ message: "contact route works" });
 });
 
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`API running on ${PORT}`);
+});
+
 app.listen(PORT, () => {
   console.log(`server running on port ${PORT}`)
 }) 

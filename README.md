@@ -129,14 +129,35 @@ Read-only access
 	•	Drag & drop board view
 	•	Automated testing
 
-⸻
+⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 📜 License
 
 This project is licensed under the MIT License.
 
-⸻
+⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+## Database Setup
+
+This project uses PostgreSQL.
+
+On first run, database tables are created automatically via Docker
+using the schema file:
+
+backend/db/schema.sql
+
+If you reset volumes manually, you can reapply the schema with:
+
+```bash
+docker compose exec -T db psql -U ilyassoudli -d devboard < backend/db/schema.sql
+```
+How to confirm it worked
+
+```After containers are up:
+docker compose exec db psql -U ilyassoudli -d devboard -c "\dt"
+```You should see your tables like users, projects, etc.
+
+⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 👋 Author
 
 Built by ILYASS OUDLI
