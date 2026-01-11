@@ -1,0 +1,44 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: devboard_db
+    environment:
+      POSTGRES_USER: ilyassoudli
+      POSTGRES_PASSWORD: ilyass
+      POSTGRES_DB: devboard
+    ports:
+      - "5433:5432"
+    volumes:
+      - devboard_db_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    container_name: devboard_backend
+    ports:
+      - "4000:4000"
+    environment:
+      PORT: 4000
+      DATABASE_URL: postgres://devboard:devboard@db:5432/devboard
+
+      JWT_SECRET: your_jwt_secret_here
+      JWT_EXPIRES_IN: 7d
+
+      RESEND_API_KEY: your_resend_key_here
+      FROM_EMAIL: onboarding@resend.dev
+    depends_on:
+      - db
+
+  frontend:
+    build: 
+      context: ./frontend/devboard
+      dockerfile: ../Dockerfile
+    container_name: devboard_frontend
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: http://localhost:4000
+    depends_on:
+      - backend
+
+volumes:
+  devboard_db_data:
