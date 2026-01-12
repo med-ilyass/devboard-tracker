@@ -156,7 +156,8 @@ How to confirm it worked
 ```After containers are up:
 docker compose exec db psql -U ilyassoudli -d devboard -c "\dt"
 ```You should see your tables like users, projects, etc.
-
+Runnig the sql file 
+docker compose exec -T db psql -U ilyassoudli -d devboard < backend/src/db/schema.sql
 ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 👋 Author
 
