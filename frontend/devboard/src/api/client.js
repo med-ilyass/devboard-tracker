@@ -1,4 +1,5 @@
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 export async function apiRequest(path, { method = "GET", body, token } = {}) {
     const headers = {};
@@ -8,6 +9,8 @@ export async function apiRequest(path, { method = "GET", body, token } = {}) {
     if (token) {
         headers["Authorization"] = `Bearer ${token}`
     }
+    const url = path.startsWith("http") ? path : `${API_URL}${path}`;
+
     let res;
     try {
         res = await fetch(path, {
