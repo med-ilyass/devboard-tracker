@@ -18,6 +18,7 @@ export default function Register({ onLogin }) {
     const email = form.get("email");
     const password = form.get("password");
     const confirmPassword = form.get("confirm_password");
+    console.log("VITE_API_URL =", import.meta.env.VITE_API_URL);
 
     if (String(password).trim() !== String(confirmPassword).trim()) {
       setError("Passwords do not match.");
