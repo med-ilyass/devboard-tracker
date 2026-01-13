@@ -8,7 +8,7 @@ export default function Register({ onLogin }) {
   const navigate = useNavigate();
 
   const token = localStorage.getItem("devboard_token");
-
+  console.log("BASE_URL =", import.meta.env.VITE_API_URL);
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
