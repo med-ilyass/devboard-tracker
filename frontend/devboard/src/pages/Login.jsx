@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { apiRequest } from "../api/client.js";
 
 export default function Login({ onLogin }) {
   const [error, setError] = useState("");
@@ -18,7 +19,7 @@ export default function Login({ onLogin }) {
     const password = form.get("password");
 
     try {
-      const res = await fetch("/api/auth/login", {
+      const res = await apiRequest("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
