@@ -10,9 +10,17 @@ import usersRouter from "./routes/users.routes.js"
 
 
 const app = express();
-const PORT = 4000;
+const PORT = process.env.PORT || 4000;
 
-app.use(cors())
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      process.env.APP_URL, // Vercel URL
+    ],
+    credentials: true,
+  })
+);
 app.use(express.json())
 
 //to test route
@@ -25,14 +33,7 @@ app.use("/api/tasks", tasksRoutes)
 app.use("/api/contact", contactRoutes);
 app.use("/api/users", usersRouter)
 
-app.post("/api/contact", (req, res) => {
-  res.json({ message: "contact route works" });
-});
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`API running on ${PORT}`);
 });
-
-app.listen(PORT, () => {
-  console.log(`server running on port ${PORT}`)
-}) 
