@@ -6,7 +6,7 @@ export default function Register({ onLogin }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
   const token = localStorage.getItem("devboard_token");
 
   async function handleSubmit(e) {
@@ -19,7 +19,6 @@ export default function Register({ onLogin }) {
     const email = form.get("email");
     const password = form.get("password");
     const confirmPassword = form.get("confirm_password");
-    console.log("VITE_API_URL =", import.meta.env.VITE_API_URL);
 
     if (String(password).trim() !== String(confirmPassword).trim()) {
       setError("Passwords do not match.");
@@ -28,17 +27,10 @@ export default function Register({ onLogin }) {
     }
 
     try {
-      const res = await apiRequest(`/api/auth/register`, {
+      const data = await apiRequest("/api/auth/register", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+        body: { name, email, password },
       });
-
-      const data = await res.json().catch(() => null);
-
-      if (!res.ok) {
-        throw new Error(data?.message || "Registration failed");
-      }
 
       // auto login after register
       onLogin(data.user, data.token);

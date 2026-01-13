@@ -19,20 +19,13 @@ export default function Login({ onLogin }) {
     const password = form.get("password");
 
     try {
-      const res = await apiRequest("/api/auth/login", {
+      const data = await apiRequest("/api/auth/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: { email, password },
       });
 
-      const data = await res.json().catch(() => null);
-
-      if (!res.ok) {
-        throw new Error(data?.message || "Invalid credentials");
-      }
-
       onLogin(data.user, data.token);
-      navigate("/projects"); // ✅ after login go projects
+      navigate("/projects");
     } catch (err) {
       setError(err.message || "Network error");
     } finally {
