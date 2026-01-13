@@ -5,7 +5,7 @@ export default function Register({ onLogin }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
+  const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
   const token = localStorage.getItem("devboard_token");
 
   async function handleSubmit(e) {
@@ -27,7 +27,7 @@ export default function Register({ onLogin }) {
     }
 
     try {
-      const res = await fetch("/api/auth/register", {
+      const res = await fetch(`${API}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
