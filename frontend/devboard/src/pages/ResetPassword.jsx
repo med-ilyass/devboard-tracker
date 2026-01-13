@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
-
+import { apiRequest } from "../api/client.js";
 
 export default function ResetPassword() {
 
@@ -64,82 +64,57 @@ export default function ResetPassword() {
 
     async function handleResend() {
         if (!email) {
-            setError("Missing email. Go Back and request a reset again.")
+            setError("Missing email. Go back and request a reset again.");
             return;
         }
         setError("");
         try {
-            //later i will xonnect this to the backend
-            //await fetch("somethink like /api/auth/forget-password", {....})
-            //for now just simulate success::
-
-            const res = await fetch("http://localhost:4000/api/auth/forgot-password", {
+            await apiRequest("/api/auth/forgot-password", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email }),
+                body: { email },
             });
-            let data = null;
-            try { data = await res.json(); } catch { }
-            if (!res.ok) throw new Error(data?.message || "Failed to resend code");
+
             const availableAt = Date.now() + COOLDOWN_SECONDS * 1000;
             localStorage.setItem(storageKey, String(availableAt));
             setSecondLeft(computeSecondsLeft(availableAt));
-        } catch (error) {
-            console.error(error)
-            setError("Failed to resend code. try again.")
+        } catch (err) {
+            setError(err.message || "Failed to resend code. Try again.");
         }
     }
     async function handleSubmit(e) {
         e.preventDefault();
-        setError("")
+        setError("");
         setLoading(true);
 
         const form = new FormData(e.target);
-        const code = form.get("code")
-        const newPassword = form.get("new_password")
-        const confirmPassword = form.get("confirm_password")
+        const code = form.get("code");
+        const newPassword = form.get("new_password");
+        const confirmPassword = form.get("confirm_password");
 
         if (newPassword.trim() !== confirmPassword.trim()) {
-            setError("Password do not match!")
-            setLoading(false)
+            setError("Passwords do not match!");
+            setLoading(false);
             return;
         }
-        // For now: we’ll connect verify + reset to backend next
-        console.log({ email, code, newPassword })
+
         try {
-            const verifyRes = await fetch(`http://localhost:4000/api/auth/verify-reset-code`, {
+            const verifyData = await apiRequest("/api/auth/verify-reset-code", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, code })
-            });
-            let verifyData = null;
-            try { verifyData = await verifyRes.json(); } catch { }
-
-            if (!verifyRes.ok) throw new Error(verifyData?.message || "Invalid or expired code");
-
-            // 2) reset password with resetToken
-            const resetRes = await fetch("http://localhost:4000/api/auth/reset-password", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ resetToken: verifyData.resetToken, newPassword }),
+                body: { email, code },
             });
 
-            let resetData = null;
-            try { resetData = await resetRes.json(); } catch { }
+            await apiRequest("/api/auth/reset-password", {
+                method: "POST",
+                body: { resetToken: verifyData.resetToken, newPassword },
+            });
 
-            if (!resetRes.ok) throw new Error(resetData?.message || "Failed to reset password");
-
-            // success
             e.target.reset();
-            // optional: clear cooldown key
             if (storageKey) localStorage.removeItem(storageKey);
-
-            // go login
             navigate("/login");
-        } catch (error) {
-            setError(error.message || "Network error")
+        } catch (err) {
+            setError(err.message || "Network error");
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
     }
 
