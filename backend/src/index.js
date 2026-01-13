@@ -12,13 +12,17 @@ import usersRouter from "./routes/users.routes.js"
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "https://devboard-tracker.vercel.app", 
-  ],
-  credentials: false,
-}));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://devboard-tracker.vercel.app",
+      "https://devboard-tracker-ka93ht683-ilyass-projects-b296dbf7.vercel.app",
+    ],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 app.use(express.json());
 app.use(express.json())
 
