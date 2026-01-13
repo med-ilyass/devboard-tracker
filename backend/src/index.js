@@ -12,15 +12,14 @@ import usersRouter from "./routes/users.routes.js"
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-app.use(
-  cors({
-    origin: [
-      "http://localhost:5173",
-      process.env.APP_URL, // Vercel URL
-    ],
-    credentials: true,
-  })
-);
+app.use(cors({
+  origin: [
+    "http://localhost:5173",
+    "https://devboard-tracker.vercel.app", 
+  ],
+  credentials: false,
+}));
+app.use(express.json());
 app.use(express.json())
 
 //to test route
