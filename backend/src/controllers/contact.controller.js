@@ -23,17 +23,15 @@ export async function sendContact(req, res) {
         });
 
         // optional: auto-reply to sender
-        await sendEmail({
-            to: email,
-            subject: "We received your message ✅",
-            html: `
-        <div style="font-family: Arial; line-height: 1.5">
-          <p>Hi ${escapeHtml(name)},</p>
-          <p>Thanks for contacting Devboard. We received your message and will reply soon.</p>
-          <p style="opacity:.7">Do not reply to this email.</p>
-        </div>
-      `,
-        });
+        await sendEmail({ to: process.env.SUPPORT_EMAIL, subject: `Devboard Contact: ${subject}`, replyTo: email, html });
+
+        try {
+            await sendEmail({ to: email, subject: "We received your message ✅", html: autoReplyHtml });
+        } catch (err) {
+            console.error("Auto-reply failed:", err.message);
+        }
+
+        return res.json({ message: "Sent" });
 
         return res.json({ message: "Sent" });
     } catch (error) {
