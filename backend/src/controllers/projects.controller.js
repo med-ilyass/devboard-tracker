@@ -6,24 +6,28 @@ export async function getProjects(req, res) {
     //changing the getproject function to get only the project owned by me and where i am a member at 
     try {
         const ownerId = req.user.id;
-        console.log("✅ getProjects handler hit");
+
         const result = await pool.query(
-            `SELECT p.id, p.name, p.description, p.owner_id, p.status, p.created_at,
-                CASE
-                    WHEN p.owner_id = $1 THEN 'owner'
-                    ELSE pm.role::text
-                END AS my_role
-            FROM projects p
-            LEFT JOIN project_members pm
-            ON pm.project_id = p.id AND pm.user_id = $1
-            WHERE (p.owner_id = $1 OR pm.user_id = $1) AND status= 'ACTIVE'
-            ORDER BY p.created_at DESC;`,
+            `
+      SELECT p.id, p.name, p.description, p.owner_id, p.status, p.created_at,
+        CASE
+          WHEN p.owner_id = $1 THEN 'owner'
+          ELSE pm.role::text
+        END AS my_role
+      FROM projects p
+      LEFT JOIN project_members pm
+        ON pm.project_id = p.id AND pm.user_id = $1
+      WHERE (p.owner_id = $1 OR pm.user_id = $1)
+        AND LOWER(p.status) = 'active'
+      ORDER BY p.created_at DESC;
+      `,
             [ownerId]
         );
-        res.json(result.rows);
+
+        return res.json(result.rows);
     } catch (error) {
-        console.error("Error in get all projects", error.message)
-        res.status(500).json({ message: "Failed to fetsh projects" })
+        console.error("Error in get all projects", error);
+        return res.status(500).json({ message: "Failed to fetch projects" });
     }
 }
 //create a new project
@@ -56,18 +60,18 @@ export async function createProject(req, res) {
 }
 //get a specific project
 export async function getProjectById(req, res) {
-  try {
-    const { projectId } = req.params;
-    const id = Number(projectId);
+    try {
+        const { projectId } = req.params;
+        const id = Number(projectId);
 
-    if (Number.isNaN(id)) {
-      return res.status(400).json({ message: "Invalid project id" });
-    }
+        if (Number.isNaN(id)) {
+            return res.status(400).json({ message: "Invalid project id" });
+        }
 
-    const userId = req.user.id;
+        const userId = req.user.id;
 
-    const result = await pool.query(
-      `
+        const result = await pool.query(
+            `
       SELECT
         p.id, p.name, p.description, p.owner_id, p.status, p.created_at,
         CASE
@@ -80,18 +84,18 @@ export async function getProjectById(req, res) {
       WHERE p.id = $2 AND (p.owner_id = $1 OR pm.user_id = $1)
       LIMIT 1
       `,
-      [userId, id]
-    );
+            [userId, id]
+        );
 
-    if (result.rows.length === 0) {
-      return res.status(404).json({ message: "Project not found!" });
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: "Project not found!" });
+        }
+
+        return res.json(result.rows[0]);
+    } catch (error) {
+        console.error("Error in getProjectById:", error.message);
+        return res.status(500).json({ error: "Failed to get project by Id" });
     }
-
-    return res.json(result.rows[0]);
-  } catch (error) {
-    console.error("Error in getProjectById:", error.message);
-    return res.status(500).json({ error: "Failed to get project by Id" });
-  }
 }
 //Update project
 export async function updateProject(req, res) {
