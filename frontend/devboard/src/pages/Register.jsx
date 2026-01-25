@@ -69,8 +69,6 @@ export default function Register({ onLogin }) {
         <form className="form" onSubmit={handleSubmit}>
           <div className="field">
             <label>Name</label>
-            <input name="name" placeholder="Your name" required />
-
             <input name="name" placeholder="Your name Ex. John Trump." required />
 
           </div>
