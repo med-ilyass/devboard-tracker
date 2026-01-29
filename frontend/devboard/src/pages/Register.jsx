@@ -70,7 +70,6 @@ export default function Register({ onLogin }) {
           <div className="field">
             <label>Name</label>
             <input name="name" placeholder="Your name Ex. John Trump." required />
-
           </div>
 
           <div className="field">

@@ -446,11 +446,11 @@ const styles = {
         alignItems: "center",
         padding: "12px 14px",
         borderRadius: 10,
-        background: "#f7f7f7",          // ✅ soft background
-        border: "1px solid #e5e5e5",
+        background: "#111827",        
+        border: "1px solid #374151",  
         marginBottom: 8,
         gap: 12,
-        color: "#000",
+        color: "#F9FAFB",             
     },
     listItemHover: {
         background: "#f0f0f0",
