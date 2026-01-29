@@ -155,6 +155,7 @@ a:hover {
 .page {
   width: min(900px, calc(100% - 32px));
   margin: 0 auto;
+  padding-top: 80px;
 }
 
 .card {
