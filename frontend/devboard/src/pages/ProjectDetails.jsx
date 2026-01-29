@@ -144,7 +144,7 @@ export default function ProjectDetails() {
 
     return (
         <div className="page">
-            <p>
+            <p style="padding-top: 90px;">
                 <Link to="/projects">← Back to Project</Link>
             </p>
             {error && <p style={{ color: "red" }}>{error}</p>}
